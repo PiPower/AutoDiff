@@ -2,9 +2,10 @@
 
 Addition::Addition(Expression *left_side, Expression *right_side)
 :
-Expression(), left_node(left_side), right_node(right_side), smb_tensor()
+Expression()
 {
-
+    children.push_back(left_node);
+    children.push_back(right_side);
 }
 
 void Addition::compile()

@@ -11,7 +11,6 @@ public:
 private:
     Expression* left_node;
     Expression* right_node;
-    Tensor smb_tensor;
 };
 
 #endif

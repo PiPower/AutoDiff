@@ -1,7 +1,13 @@
 #include "Variable.hpp"
 
-Variable::Variable(Tensor *tensor)
+Variable::Variable(TensorShape shape)
 :
-parameter(tensor)
+Expression(), shape(shape)
 {
+
+}
+
+void Variable::compile()
+{
+    
 }
