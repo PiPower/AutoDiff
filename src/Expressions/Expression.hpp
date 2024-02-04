@@ -1,5 +1,8 @@
 #include "../Tensor/Tensor.hpp"
 
+#ifndef EXPRESSION
+#define EXPRESSION
+
 class Expression
 {
 public:
@@ -8,3 +11,5 @@ public:
 protected:
     Expression() = default;
 };
+
+#endif

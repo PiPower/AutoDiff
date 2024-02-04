@@ -4,3 +4,4 @@ project(LizardAutoDiff)
 
 add_subdirectory(./Tensor)
 add_subdirectory(./Expressions)
+add_subdirectory(./Graph)

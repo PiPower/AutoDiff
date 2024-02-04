@@ -1,5 +1,8 @@
 #include "Expression.hpp"
 
+#ifndef ADDITION
+#define ADDITION
+
 class Addition : public Expression
 {
 public:
@@ -10,3 +13,5 @@ private:
     Expression* right_node;
     Tensor smb_tensor;
 };
+
+#endif
