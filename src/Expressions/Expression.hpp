@@ -1,3 +1,5 @@
+#include "../Tensor/Tensor.hpp"
+
 class Expression
 {
 public:
