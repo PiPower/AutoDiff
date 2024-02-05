@@ -12,8 +12,25 @@ Expression()
 
     children.push_back(left_side);
     children.push_back(right_side);
+
 }
 
 void Addition::build()
 {
+    const TensorShape left_shape = children[0]->getTensor()->getShape();
+    const TensorShape right_shape = children[1]->getTensor()->getShape();
+
+    logErrorAndExit( children[0]->getTensor()->getType() != children[1]->getTensor()->getType(), 
+    "Unmatching tensor types for addition node \n");
+
+    logErrorAndExit( left_shape.size() != right_shape.size(),"Unmatching tensor shapes for addition node \n");
+    for(int i =0;  i < left_shape.size(); i++ )
+    {
+          logErrorAndExit(left_shape[i] != right_shape[i], "Unmatching tensor shapes for addition node \n");
+    }
+
+    result = new Tensor(left_shape,  children[0]->getTensor()->getType());
+    result->setTensor_DeviceToDevice(children[0]->getTensor()->getTensorPointer());
+
+    void* desc = createTensorDescriptor(result->getType(), result->getShape());
 }

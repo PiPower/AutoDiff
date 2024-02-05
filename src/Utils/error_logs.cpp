@@ -6,7 +6,7 @@ void logErrorAndExit(bool condition, const char *message)
 {
     if(condition)
     {
-        fprintf(stderr, message);
+        fprintf(stderr,"%s" ,message);
         exit(-1); 
     }
 }

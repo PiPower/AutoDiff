@@ -26,7 +26,8 @@ void initCudnn()
     cudnnExitOnError(status, "Cudnn initialization failed! \n");
 
 #ifdef DEBUG
-    status = cudnnSetCallback(CUDNN_SEV_ERROR_EN, NULL, NULL );
+//for logging to work CUDNN_LOGDEST_DBG MUST be set to desired output: stdout or stderr or file
+    status = cudnnSetCallback(0x0F, NULL, NULL );
     cudnnExitOnError(status, "Cudnn could not start logging! \n");
 #endif
 }
@@ -43,7 +44,10 @@ void destroyCudnn()
     }
 }
 
-cudnnTensorDescriptor_t createTensorDescriptor(TensorType dtype, TensorShape shape)
+void* createTensorDescriptor(TensorType dtype, TensorShape shape)
 {
-    return cudnnTensorDescriptor_t();
+    cudnnTensorDescriptor_t desc;
+    cudnnStatus_t status = cudnnCreateTensorDescriptor(&desc);
+    cudnnExitOnError(status, "Cudnn tensor descriptor failed! \n");
+    return desc;
 }

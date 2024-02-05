@@ -10,7 +10,8 @@ class Expression
 {
 public:
     virtual void build() = 0;
-    virtual ~Expression();
+    virtual ~Expression();  
+    Tensor* getTensor(){return result;}
 protected:
     Expression();
 protected:

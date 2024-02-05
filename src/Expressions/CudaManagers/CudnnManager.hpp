@@ -7,5 +7,5 @@
 void initCudnn();
 void destroyCudnn();
 
-cudnnTensorDescriptor_t createTensorDescriptor(TensorType dtype, TensorShape shape);
+void* createTensorDescriptor(TensorType dtype, TensorShape shape);
 #endif

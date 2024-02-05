@@ -23,6 +23,7 @@ void initCublas()
     cublasHandle = (cublasHandle_t*)malloc(sizeof(cublasHandle_t));
     cublasStatus_t status = cublasCreate(cublasHandle);
     cublasExitOnError(status, "Cublas initialization failed! \n");
+    
 #ifdef DEBUG
     status = cublasLoggerConfigure(true, 1,0,nullptr );
     cublasExitOnError(status, "Cublas could not start logging! \n");
