@@ -2,7 +2,7 @@
 
 Expression::Expression()
 :
-visited(false), result(nullptr)
+visited(false), result(nullptr), addedToExecutionList(false)
 {
 
 }
