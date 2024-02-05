@@ -14,7 +14,7 @@ public:
     Variable() = delete;
     Variable(TensorShape shape, Initializer* initializer, TensorType dtype = TensorType::float32);
     void initVariable();
-    void compile();
+    void build();
 private:
 Initializer* initializer;
 Tensor* gradient;

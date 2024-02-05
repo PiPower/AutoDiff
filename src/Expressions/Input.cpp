@@ -6,6 +6,6 @@ Expression(), shape(shape)
 {
 }
 
-void Input::compile()
+void Input::build()
 {
 }

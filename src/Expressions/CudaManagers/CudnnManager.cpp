@@ -24,6 +24,11 @@ void initCudnn()
     cudnnHandle = (cudnnHandle_t*)malloc(sizeof(cudnnHandle_t));
     cudnnStatus_t status = cudnnCreate(cudnnHandle);
     cudnnExitOnError(status, "Cudnn initialization failed! \n");
+
+#ifdef DEBUG
+    status = cudnnSetCallback(CUDNN_SEV_ERROR_EN, NULL, NULL );
+    cudnnExitOnError(status, "Cudnn could not start logging! \n");
+#endif
 }
 
 void destroyCudnn()
@@ -34,5 +39,11 @@ void destroyCudnn()
         cudnnExitOnError(status, "Cudnn destruction failed! \n");
         delete cudnnHandle;
         cudnnHandle = nullptr;
+
     }
+}
+
+cudnnTensorDescriptor_t createTensorDescriptor(TensorType dtype, TensorShape shape)
+{
+    return cudnnTensorDescriptor_t();
 }

@@ -9,7 +9,7 @@ class Graph;
 class Expression
 {
 public:
-    virtual void compile() = 0;
+    virtual void build() = 0;
     virtual ~Expression();
 protected:
     Expression();

@@ -11,7 +11,7 @@ class Input : public Expression
 public:
     Input() = delete;
     Input(TensorShape shape);
-    void compile();
+    void build();
 private:
 TensorShape shape;
 };

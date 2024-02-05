@@ -18,7 +18,7 @@ void Variable::initVariable()
     delete[] copySource;
 }
 
-void Variable::compile()
+void Variable::build()
 {
     
 }

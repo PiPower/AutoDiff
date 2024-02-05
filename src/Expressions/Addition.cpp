@@ -14,6 +14,6 @@ Expression()
     children.push_back(right_side);
 }
 
-void Addition::compile()
+void Addition::build()
 {
 }
