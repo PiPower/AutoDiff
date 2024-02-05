@@ -27,10 +27,11 @@ void Addition::build()
     for(int i =0;  i < left_shape.size(); i++ )
     {
           logErrorAndExit(left_shape[i] != right_shape[i], "Unmatching tensor shapes for addition node \n");
+          logErrorAndExit(left_shape[i] == 0, "Tensor cannot bet 0 along any dimension");
     }
 
     result = new Tensor(left_shape,  children[0]->getTensor()->getType());
     result->setTensor_DeviceToDevice(children[0]->getTensor()->getTensorPointer());
 
-    void* desc = createTensorDescriptor(result->getType(), result->getShape());
+    tensorDescriptor = createTensorDescriptor(result->getType(), result->getShape());
 }

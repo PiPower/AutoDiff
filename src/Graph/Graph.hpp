@@ -11,6 +11,8 @@ class Graph
 public:
     Graph(Expression* graph);
     void compileGraph();
+    void initVariables();
+    void build();
 private:
 Expression* headOfGraph;
 //executing order of executionList is 1st, 2nd, .... , n_th

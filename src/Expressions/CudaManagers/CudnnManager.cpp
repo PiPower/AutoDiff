@@ -4,6 +4,47 @@
 
 cudnnHandle_t* cudnnHandle = nullptr;
 
+cudnnDataType_t getDataType(TensorType dtype)
+{
+    switch (dtype)
+    {
+        case TensorType::float16:
+            return CUDNN_DATA_BFLOAT16;
+        case TensorType::float32:
+            return CUDNN_DATA_FLOAT;
+        case TensorType::float64:
+            return CUDNN_DATA_DOUBLE;
+        case TensorType::int32:
+            return CUDNN_DATA_INT32;
+        case TensorType::int64:
+            return CUDNN_DATA_INT64;
+        default:
+            fprintf(stderr, "Unsported dtype");
+            exit(-1);
+    }
+}
+
+int getDataTypeStride(TensorType dtype)
+{
+    switch (dtype)
+    {
+        case TensorType::float16:
+            return 2;
+        case TensorType::float32:
+            return 4;
+        case TensorType::float64:
+            return 8;
+        case TensorType::int32:
+            return 4;
+        case TensorType::int64:
+            return 8;
+        default:
+            fprintf(stderr, "Unsported dtype");
+            exit(-1);
+    }
+}
+
+
 void cudnnExitOnError(cudnnStatus_t status, const char* msg)
 {
     if(status != CUDNN_STATUS_SUCCESS)
@@ -49,5 +90,21 @@ void* createTensorDescriptor(TensorType dtype, TensorShape shape)
     cudnnTensorDescriptor_t desc;
     cudnnStatus_t status = cudnnCreateTensorDescriptor(&desc);
     cudnnExitOnError(status, "Cudnn tensor descriptor failed! \n");
+
+    int dimCount = shape.size() > 2 ? shape.size() : 3;
+    int* dim = new int[dimCount];
+    int* dimStride = new int[dimCount];
+
+    int stride = 1;
+    for(int i = dimCount - 1, j = shape.size()-1; i >= 0; i--, j--)
+    {
+        dim[i] =  j >= 0? shape[j] : 1;
+        dimStride[i] = stride;
+        stride = stride * dim[i];
+    } 
+
+    status = cudnnSetTensorNdDescriptor(desc, getDataType(dtype), dimCount, dim, dimStride);
+    cudnnExitOnError(status, "Cudnn tensor descriptor set failed! \n");
+    delete[] dim;
     return desc;
 }

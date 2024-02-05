@@ -20,6 +20,7 @@ friend class Graph;
     bool addedToExecutionList; 
     std::vector<Expression*> children;
     Tensor* result;
+    void* tensorDescriptor;
 };
 
 #endif
