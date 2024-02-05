@@ -3,11 +3,11 @@
 
 cublasHandle_t* cublasHandle = nullptr;
 
-void cudaExitOnError(cublasStatus_t status, const char* msg)
+void cublasExitOnError(cublasStatus_t status, const char* msg)
 {
     if(status != CUBLAS_STATUS_SUCCESS)
     {
-        fprintf(stderr, msg);
+        fprintf(stderr, "%s",msg);
         fprintf(stderr, "Error code: %d \n", (int)status);
         exit(-1);
     }
@@ -22,7 +22,7 @@ void initCublas()
 
     cublasHandle = (cublasHandle_t*)malloc(sizeof(cublasHandle_t));
     cublasStatus_t status = cublasCreate(cublasHandle);
-    cudaExitOnError(status, "Cuda initialization failed! \n");
+    cublasExitOnError(status, "Cublas initialization failed! \n");
 }
 
 void destroyCublas()
@@ -30,7 +30,8 @@ void destroyCublas()
     if(cublasHandle != nullptr)
     {
         cublasStatus_t status = cublasDestroy(*cublasHandle);
-        cudaExitOnError(status, "Cuda destruction failed! \n");
+        cublasExitOnError(status, "Cublas destruction failed! \n");
         delete cublasHandle;
+        cublasHandle = nullptr;
     }
 }

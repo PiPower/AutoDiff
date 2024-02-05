@@ -1,5 +1,6 @@
 #include "../Tensor/Tensor.hpp"
 #include "CudaManagers/CublasManager.hpp"
+#include "CudaManagers/CudnnManager.hpp"
 
 #ifndef EXPRESSION
 #define EXPRESSION
