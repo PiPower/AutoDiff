@@ -12,13 +12,13 @@ tensorDeviceMemory(nullptr), dtype(dtype)
     this->shape = dim;
     if(dim.size() != 0 )
     {
-        unsigned int total_size = 0;
+        unsigned int total_item_count = 1;
         for(auto& dimSize : dim)
         {
            logErrorAndExit(dimSize == 0, "Tensor cannot have dim of size 0! \n");
-           total_size += dimSize;
+           total_item_count = dimSize * total_item_count;
         }
-        cudaMalloc(&tensorDeviceMemory, total_size * typeSizeTable[(unsigned int)dtype]);
+        cudaMalloc(&tensorDeviceMemory, total_item_count * typeSizeTable[(unsigned int)dtype]);
     }
 }
 
