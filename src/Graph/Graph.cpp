@@ -15,7 +15,7 @@ headOfGraph(graph)
 Compilation algorithm first searches for all input/variable node because they are always first
 to exectute, but they should be executed only once during initialization period
 Algorithm performs steps:
--First graph pass add all input/variable expressions into variableList/inputList, all other types of nodes are added into waitList
+-During first graph pass add all input/variable expressions into variableList/inputList, all other types of nodes are added into waitList
 -Loop until list is empty if all of the nodes are either variable/input type or marked as addedToExecutionList add node to 
 exectution list, mark it as addedToExecutionList and remove it from waitList
 */
@@ -34,6 +34,10 @@ void Graph::compileGraph()
         if( Variable *var = dynamic_cast<Variable*>(currentNode) )
         {
             variableList.push_back(var);
+        }
+        else if( Input *inp = dynamic_cast<Input*>(currentNode) )
+        {
+            inputList.push_back(inp);
         }
         else
         {
