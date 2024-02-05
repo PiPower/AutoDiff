@@ -24,8 +24,13 @@ tensorDeviceMemory(nullptr), dtype(dtype)
 
 void Tensor::setTensor_HostToDevice(void* data)
 {
-    logErrorAndExit(tensorDeviceMemory == nullptr, "Copy operation to unexisten memory!\n");
+    logErrorAndExit(tensorDeviceMemory == nullptr, "Copy source is unexisting host memory!\n");
     cudaMemcpy(tensorDeviceMemory, data,  getNumberOfElements() * typeSizeTable[(unsigned int)dtype], cudaMemcpyHostToDevice );
+}
+
+void* Tensor::getTensorPointer()
+{
+    return tensorDeviceMemory;
 }
 
 unsigned int Tensor::getNumberOfElements()
@@ -37,4 +42,20 @@ unsigned int Tensor::getNumberOfElements()
     }
 
     return total_size;
+}
+
+void Tensor::setTensor_DeviceToDevice(void *data)
+{
+    logErrorAndExit(tensorDeviceMemory == nullptr, "Copy source is unexisting device memory!\n");
+    cudaMemcpy(tensorDeviceMemory, data,  getNumberOfElements() * typeSizeTable[(unsigned int)dtype], cudaMemcpyDeviceToDevice );
+}
+
+TensorShape Tensor::getShape()
+{
+    return shape;
+}
+
+TensorType Tensor::getType()
+{
+    return dtype;
 }

@@ -18,12 +18,19 @@ enum class TensorType
     float64,
 };
 
+/*
+Support up to 5D tensors
+*/
 class Tensor
 {
 public:
     Tensor(TensorShape dim = {}, TensorType dtype = TensorType::float32);
+    void* getTensorPointer();
     void setTensor_HostToDevice(void* data);
+    void setTensor_DeviceToDevice(void* data);
     unsigned int getNumberOfElements();
+    TensorShape getShape();
+    TensorType getType();
 private:
     TensorShape shape;
     TensorType dtype;
