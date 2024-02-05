@@ -1,21 +1,15 @@
 #include "Addition.hpp"
 #include <iostream>
+#include "../Utils/error_logs.hpp"
 using namespace std;
 
 Addition::Addition(Expression *left_side, Expression *right_side)
 :
 Expression()
 {
-    if(left_side == nullptr)
-    {
-        cout << "ERROR: left child of node [Addition] cannot be nullptr \n";
-        exit(-1); 
-    }
-    if(right_side == nullptr)
-    {
-        cout << "ERROR: right child of node [Addition] cannot be nullptr \n";
-        exit(-1); 
-    }
+    logErrorAndExit(left_side == nullptr, "ERROR: left child of node [Addition] cannot be nullptr \n");
+    logErrorAndExit(right_side == nullptr, "ERROR: right child of node [Addition] cannot be nullptr \n");
+
     children.push_back(left_side);
     children.push_back(right_side);
 }

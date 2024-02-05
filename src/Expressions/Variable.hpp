@@ -12,10 +12,10 @@ class Variable : public Expression
 public:
     Variable() = delete;
     Variable(TensorShape shape);
+    void initVariable();
     void compile();
 private:
 TensorShape shape;
-Tensor* parameter;
 Tensor* gradient;
 };
 
