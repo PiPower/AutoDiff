@@ -1,7 +1,7 @@
 #include "CudnnManager.hpp"
 #include <cstdio>
 #include <stdlib.h>
-
+#include <iostream>
 cudnnHandle_t* cudnnHandle = nullptr;
 
 cudnnDataType_t getDataType(TensorType dtype)
@@ -96,22 +96,31 @@ void* createTensorDescriptor(TensorType dtype, TensorShape shape)
     int* dimStride = new int[dimCount];
 
     int stride = 1;
-    for(int i = dimCount - 1, j = shape.size()-1; i >= 0; i--, j--)
+    int z = shape.size();
+    for(int i =  dimCount - 1, j = shape.size()-1; i >= 0; i--, j--)
     {
         dim[i] =  j >= 0? shape[j] : 1;
-        dimStride[i] =  j >= 0? stride : 1;
+        dimStride[i] =  j>=0 ? stride : 1;
         stride = stride * dim[i];
     } 
 
     status = cudnnSetTensorNdDescriptor(desc, getDataType(dtype), dimCount, dim, dimStride);
+    //status = cudnnSetTensor4dDescriptor(desc,CUDNN_TENSOR_NCHW, getDataType(dtype),dim[0], dim[1], dim[2], dim[3]);
     cudnnExitOnError(status, "Cudnn tensor descriptor set failed! \n");
     delete[] dim;
+    delete[] dimStride;
+
     return desc;
 }
 
-void addTensors( const void *alpha,
-                const void* aDesc, const void *A,
-                const void *beta,const void*  cDesc, void *C)
+void addTensors(const void *alpha,
+                const void* aDesc,  Tensor *Operand,
+                const void *beta,const void*  cDesc, Tensor *Destination)
 {
-    cudnnAddTensor(*cudnnHandle, alpha, (cudnnTensorDescriptor_t)aDesc, A, beta, (cudnnTensorDescriptor_t)cDesc, C);
+    cudnnStatus_t status;
+    status = cudnnAddTensor(*cudnnHandle, alpha, (cudnnTensorDescriptor_t)aDesc,
+     Destination->getTensorPointer(), beta, (cudnnTensorDescriptor_t)cDesc, Destination->getTensorPointer());
+#ifdef DEBUG
+    cudnnExitOnError(status, "Cudnn could not start logging! \n");
+#endif
 }

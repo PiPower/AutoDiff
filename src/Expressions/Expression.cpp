@@ -2,7 +2,7 @@
 
 Expression::Expression()
 :
-visited(false), result(nullptr), addedToExecutionList(false)
+visited(false), result(nullptr), addedToExecutionList(false), tensorDescriptor(nullptr)
 {
     initCublas();
     initCudnn();

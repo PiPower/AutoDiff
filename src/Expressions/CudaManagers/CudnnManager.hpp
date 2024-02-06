@@ -9,6 +9,6 @@ void destroyCudnn();
 
 void* createTensorDescriptor(TensorType dtype, TensorShape shape);
 void addTensors(const void *alpha,
-                const void* aDesc, const void *A,
-                const void *beta,const void* cDesc, void *C);
+                const void* aDesc, Tensor *Operand,
+                const void *beta,const void* cDesc, Tensor *Destination);
 #endif

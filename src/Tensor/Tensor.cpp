@@ -9,6 +9,7 @@ Tensor::Tensor(TensorShape dim, TensorType dtype)
 :
 tensorDeviceMemory(nullptr), dtype(dtype)
 {
+    logErrorAndExit(dtype != TensorType::float32, "currently usupported tensor type\n");
     this->shape = dim;
     rank = dim.size();
     if(rank != 0 )
@@ -32,8 +33,11 @@ void Tensor::setTensor_HostToDevice(void* data)
 {
     logErrorAndExit(tensorDeviceMemory == nullptr, "Copy dest is unallocated  tensor!\n");
     logErrorAndExit(data == nullptr, "Copy source is unallocated tensor!\n");
-    unsigned int tensor_byte_size = getNumberOfElements() * typeSizeTable[(unsigned int)dtype];
-    cudaMemcpy(tensorDeviceMemory, data,  tensor_byte_size, cudaMemcpyHostToDevice);
+    cudaError err;
+    err = cudaMemcpy(tensorDeviceMemory, data,  getNumberOfElements() * typeSizeTable[(unsigned int)dtype], cudaMemcpyHostToDevice);
+#ifdef DEBUG
+    logErrorAndExit(err, "Incorrent memory device to device copy");
+#endif
 }
 
 void* Tensor::getTensorPointer()
@@ -56,7 +60,11 @@ void Tensor::setTensor_DeviceToDevice(void *data)
 {
     logErrorAndExit(tensorDeviceMemory == nullptr, "Copy dest is unallocated  tensor!\n");
     logErrorAndExit(data == nullptr, "Copy source is unallocated tensor!\n");
-    cudaMemcpy(tensorDeviceMemory, data,  getNumberOfElements() * typeSizeTable[(unsigned int)dtype], cudaMemcpyDeviceToDevice );
+    cudaError err;
+    err = cudaMemcpy(tensorDeviceMemory, data,  getNumberOfElements() * typeSizeTable[(unsigned int)dtype], cudaMemcpyDeviceToDevice );
+#ifdef DEBUG
+    logErrorAndExit(err, "Incorrent memory device to device copy");
+#endif
 }
 
 TensorShape Tensor::getShape()
@@ -66,7 +74,15 @@ TensorShape Tensor::getShape()
 
 char *Tensor::getTensorValues()
 {
-    return nullptr;
+    logErrorAndExit(tensorDeviceMemory == nullptr, "Copy dest is unallocated  tensor!\n");
+    char* data = new char[getNumberOfElements() * typeSizeTable[(unsigned int)dtype]];
+    unsigned int tensor_byte_size = getNumberOfElements() * typeSizeTable[(unsigned int)dtype];
+    cudaError err;
+    err = cudaMemcpy(data, tensorDeviceMemory,  tensor_byte_size, cudaMemcpyDeviceToHost);
+#ifdef DEBUG
+    logErrorAndExit(err, "Incorrent memory device to device copy");
+#endif
+    return data;
 }
 
 TensorType Tensor::getType()

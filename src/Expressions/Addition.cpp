@@ -38,10 +38,10 @@ void Addition::build()
 
 void Addition::execute()
 {
-    float alpha =1;
-    float beta = 1;
+    float alpha = 1.0;
+    float beta = 1.0;
     result->setTensor_DeviceToDevice(children[0]->getTensor()->getTensorPointer());
-    addTensors(&alpha, children[1]->getDescriptor(),children[1]->getTensor()->getTensorPointer(), 
+    addTensors(&alpha, children[1]->getDescriptor(),children[1]->getTensor(), 
     &beta, tensorDescriptor, result);
     
 }

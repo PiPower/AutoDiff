@@ -24,7 +24,7 @@ char* GaussianInitializer::generate(unsigned int count)
         float* dataBuffer =  new float[count];
         for(int i =0; i < count; i++)
         {
-            dataBuffer[i] =  normal_dist(rng);
+            dataBuffer[i] = normal_dist(rng);
         }
         return (char*)dataBuffer;
     }
