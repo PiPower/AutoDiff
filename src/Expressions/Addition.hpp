@@ -8,6 +8,7 @@ class Addition : public Expression
 public:
     Addition( Expression* left_side, Expression* right_side);
     void build();
+    void execute();
 };
 
 #endif

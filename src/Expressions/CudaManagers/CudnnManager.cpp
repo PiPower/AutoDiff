@@ -91,7 +91,7 @@ void* createTensorDescriptor(TensorType dtype, TensorShape shape)
     cudnnStatus_t status = cudnnCreateTensorDescriptor(&desc);
     cudnnExitOnError(status, "Cudnn tensor descriptor failed! \n");
 
-    int dimCount = shape.size() > 2 ? shape.size() : 3;
+    int dimCount = shape.size() > 3 ? shape.size() : 4;
     int* dim = new int[dimCount];
     int* dimStride = new int[dimCount];
 
@@ -99,7 +99,7 @@ void* createTensorDescriptor(TensorType dtype, TensorShape shape)
     for(int i = dimCount - 1, j = shape.size()-1; i >= 0; i--, j--)
     {
         dim[i] =  j >= 0? shape[j] : 1;
-        dimStride[i] = stride;
+        dimStride[i] =  j >= 0? stride : 1;
         stride = stride * dim[i];
     } 
 
@@ -107,4 +107,11 @@ void* createTensorDescriptor(TensorType dtype, TensorShape shape)
     cudnnExitOnError(status, "Cudnn tensor descriptor set failed! \n");
     delete[] dim;
     return desc;
+}
+
+void addTensors( const void *alpha,
+                const void* aDesc, const void *A,
+                const void *beta,const void*  cDesc, void *C)
+{
+    cudnnAddTensor(*cudnnHandle, alpha, (cudnnTensorDescriptor_t)aDesc, A, beta, (cudnnTensorDescriptor_t)cDesc, C);
 }

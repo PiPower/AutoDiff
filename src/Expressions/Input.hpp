@@ -10,10 +10,9 @@ class Input : public Expression
 {
 public:
     Input() = delete;
-    Input(TensorShape shape);
+    Input(TensorShape shape, TensorType dtype = TensorType::float32);
     void build();
-private:
-TensorShape shape;
+    void execute();
 };
 
 #endif

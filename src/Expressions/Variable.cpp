@@ -6,6 +6,7 @@ Variable::Variable(TensorShape shape, Initializer* initializer, TensorType dtype
 :
 Expression(), initializer(initializer)
 {
+    logErrorAndExit(shape.size() == 0, "scalar tensors are currently unsuported\n");
     logErrorAndExit(initializer == nullptr, "initializer cannot be nullptr \n");
     for(int i =0;  i < shape.size(); i++ )
     {
@@ -25,4 +26,8 @@ void Variable::initVariable()
 void Variable::build()
 {
     tensorDescriptor = createTensorDescriptor(result->getType(), result->getShape());
+}
+
+void Variable::execute()
+{
 }

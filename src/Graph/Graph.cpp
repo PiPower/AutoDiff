@@ -111,3 +111,11 @@ void Graph::build()
         node->build();
     }
 }
+
+void Graph::execute()
+{
+    for(Expression* node : executionList)
+    {
+        node->execute();
+    }
+}

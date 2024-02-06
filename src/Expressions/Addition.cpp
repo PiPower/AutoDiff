@@ -21,7 +21,7 @@ void Addition::build()
     const TensorShape right_shape = children[1]->getTensor()->getShape();
 
     logErrorAndExit( children[0]->getTensor()->getType() != children[1]->getTensor()->getType(), 
-    "Unmatching tensor types for addition node \n");
+    "Non matching tensor types for addition node \n");
 
     logErrorAndExit( left_shape.size() != right_shape.size(),"Unmatching tensor shapes for addition node \n");
     for(int i =0;  i < left_shape.size(); i++ )
@@ -34,4 +34,14 @@ void Addition::build()
     result->setTensor_DeviceToDevice(children[0]->getTensor()->getTensorPointer());
 
     tensorDescriptor = createTensorDescriptor(result->getType(), result->getShape());
+}
+
+void Addition::execute()
+{
+    float alpha =1;
+    float beta = 1;
+    result->setTensor_DeviceToDevice(children[0]->getTensor()->getTensorPointer());
+    addTensors(&alpha, children[1]->getDescriptor(),children[1]->getTensor()->getTensorPointer(), 
+    &beta, tensorDescriptor, result);
+    
 }

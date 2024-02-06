@@ -13,6 +13,7 @@ public:
     void compileGraph();
     void initVariables();
     void build();
+    void execute();
 private:
 Expression* headOfGraph;
 //executing order of executionList is 1st, 2nd, .... , n_th
