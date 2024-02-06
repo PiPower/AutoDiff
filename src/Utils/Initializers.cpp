@@ -21,7 +21,7 @@ char* GaussianInitializer::generate(unsigned int count)
         std::random_device dev;
         std::mt19937 rng(dev());
         std::normal_distribution<float> normal_dist(mean, std_dev);
-        float* dataBuffer = (float*) malloc(count * sizeof(float) );
+        float* dataBuffer =  new float[count];
         for(int i =0; i < count; i++)
         {
             dataBuffer[i] =  normal_dist(rng);
