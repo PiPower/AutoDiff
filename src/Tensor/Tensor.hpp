@@ -28,6 +28,7 @@ public:
     void* getTensorPointer();
     void setTensor_HostToDevice(void* data);
     void setTensor_DeviceToDevice(void* data);
+    char* getTensorValues();
     unsigned int getNumberOfElements();
     TensorShape getShape();
     TensorType getType();
@@ -35,6 +36,7 @@ private:
     TensorShape shape;
     TensorType dtype;
     void* tensorDeviceMemory;
+    unsigned int rank;
 };
 
 #endif

@@ -2,15 +2,16 @@
 #include <cuda_runtime_api.h>
 #include "../Utils/error_logs.hpp"
 
-unsigned char typeSizeTable[] = {16, 32, 64, 16, 32, 64, 16, 32, 64};
+unsigned char typeSizeTable[] = {2, 4, 8, 2, 4, 8, 2, 4, 8};
 
 
-Tensor::Tensor(std::vector<unsigned int> dim, TensorType dtype)
+Tensor::Tensor(TensorShape dim, TensorType dtype)
 :
 tensorDeviceMemory(nullptr), dtype(dtype)
 {
     this->shape = dim;
-    if(dim.size() != 0 )
+    rank = dim.size();
+    if(rank != 0 )
     {
         unsigned int total_item_count = 1;
         for(auto& dimSize : dim)
@@ -20,12 +21,19 @@ tensorDeviceMemory(nullptr), dtype(dtype)
         }
         cudaMalloc(&tensorDeviceMemory, total_item_count * typeSizeTable[(unsigned int)dtype]);
     }
+    else
+    {
+        // rank 0 tensor ie scalar
+         cudaMalloc(&tensorDeviceMemory, typeSizeTable[(unsigned int)dtype]);
+    }
 }
 
 void Tensor::setTensor_HostToDevice(void* data)
 {
-    logErrorAndExit(tensorDeviceMemory == nullptr, "Copy source is unexisting host memory!\n");
-    cudaMemcpy(tensorDeviceMemory, data,  getNumberOfElements() * typeSizeTable[(unsigned int)dtype], cudaMemcpyHostToDevice );
+    logErrorAndExit(tensorDeviceMemory == nullptr, "Copy dest is unallocated  tensor!\n");
+    logErrorAndExit(data == nullptr, "Copy source is unallocated tensor!\n");
+    unsigned int tensor_byte_size = getNumberOfElements() * typeSizeTable[(unsigned int)dtype];
+    cudaMemcpy(tensorDeviceMemory, data,  tensor_byte_size, cudaMemcpyHostToDevice);
 }
 
 void* Tensor::getTensorPointer()
@@ -35,10 +43,10 @@ void* Tensor::getTensorPointer()
 
 unsigned int Tensor::getNumberOfElements()
 {
-    unsigned int total_size = 0;
+    unsigned int total_size = 1;
     for(auto& dimSize : shape)
     {
-        total_size += dimSize;
+        total_size *= dimSize;
     }
 
     return total_size;
@@ -46,13 +54,19 @@ unsigned int Tensor::getNumberOfElements()
 
 void Tensor::setTensor_DeviceToDevice(void *data)
 {
-    logErrorAndExit(tensorDeviceMemory == nullptr, "Copy source is unexisting device memory!\n");
+    logErrorAndExit(tensorDeviceMemory == nullptr, "Copy dest is unallocated  tensor!\n");
+    logErrorAndExit(data == nullptr, "Copy source is unallocated tensor!\n");
     cudaMemcpy(tensorDeviceMemory, data,  getNumberOfElements() * typeSizeTable[(unsigned int)dtype], cudaMemcpyDeviceToDevice );
 }
 
 TensorShape Tensor::getShape()
 {
     return shape;
+}
+
+char *Tensor::getTensorValues()
+{
+    return nullptr;
 }
 
 TensorType Tensor::getType()
