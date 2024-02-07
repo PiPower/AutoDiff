@@ -9,6 +9,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DDEBUG)
 endif()
 
+add_subdirectory(./Kernels)
 add_subdirectory(./Utils)
 add_subdirectory(./Tensor)
 add_subdirectory(./Expressions)
