@@ -1,22 +1,10 @@
 #include <vector>
-
+#include "../Kernels/kernel_api.h"
+#include "CudaManagers/CublasManager.hpp"
+#include "CudaManagers/CudnnManager.hpp"
+#include "TensorTypes.hpp"
 #ifndef TENSOR 
 #define TENSOR
-
-typedef std::vector<unsigned int> TensorShape;
-
-enum class TensorType
-{
-    uint16 , //placeholder, currently unsupported
-    uint32,//placeholder, currently unsupported
-    uint64,//placeholder, currently unsupported
-    int16,//placeholder, currently unsupported
-    int32,//placeholder, currently unsupported
-    int64,//placeholder, currently unsupported
-    float16,//placeholder, currently unsupported
-    float32,
-    float64,//placeholder, currently unsupported
-};
 
 /*
 Support up to 5D tensors
@@ -25,19 +13,25 @@ class Tensor
 {
 public:
     Tensor(TensorShape dim = {}, TensorType dtype = TensorType::float32);
-    void* getTensorPointer();
+    DevicePointer* getTensorPointer();
+    DevicePointer* getCudaDescriptorPointer();
     void setTensor_HostToDevice(void* data);
     void setTensor_DeviceToDevice(void* data);
     char* getTensorValues();
     unsigned int getNumberOfElements();
     TensorShape getShape();
     TensorType getType();
+    void buildDescriptors();
     ~Tensor();
+
+    // Tensor ops
+    static void addTensors(Tensor* dest, Tensor* left, Tensor* right);
 private:
     TensorShape shape;
     TensorType dtype;
-    void* tensorDeviceMemory;
+    DevicePointer* tensorDeviceMemory;
     unsigned int rank;
+    DevicePointer* tensorDescriptor;
+    TensorDesc *cudaDescriptorDevice;
 };
-
 #endif

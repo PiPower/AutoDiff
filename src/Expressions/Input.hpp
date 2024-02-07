@@ -14,7 +14,7 @@ public:
     Input(TensorShape shape, std::string name, TensorType dtype = TensorType::float32);
     void build();
     void execute();
-    const string* getName();
+    const std::string* getName();
     void setInput(Tensor* t);
 private:
     std::string name;

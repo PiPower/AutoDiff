@@ -1,8 +1,5 @@
 #include "../Tensor/Tensor.hpp"
-#include "CudaManagers/CublasManager.hpp"
-#include "CudaManagers/CudnnManager.hpp"
 #include "../Utils/error_logs.hpp"
-#include "../Kernels/kernel_api.h"
 
 #ifndef EXPRESSION
 #define EXPRESSION
@@ -17,9 +14,6 @@ public:
     virtual void execute() = 0;
     virtual ~Expression();  
     Tensor* getTensor(){return result;}
-    void* getDescriptor(){ return tensorDescriptor;}
-    TensorDesc* getCudaDescriptor(){return cudaDescriptorDevice;}
-    void buildResultCudaDesc();
 protected:
     Expression();
 protected:
@@ -28,8 +22,6 @@ friend class Graph;
     bool addedToExecutionList; 
     std::vector<Expression*> children;
     Tensor* result;
-    void* tensorDescriptor;
-    TensorDesc *cudaDescriptorDevice;
 };
 
 #endif

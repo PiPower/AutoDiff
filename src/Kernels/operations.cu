@@ -42,8 +42,7 @@ __global__ void _kernelAddTensors(float* dest, float* left, float* right, Tensor
 
 
 
-extern "C" void addTensors( float* dest, float* left, float* right, 
-        TensorDesc* leftDesc, TensorDesc* rightDesc)
+extern "C" void addTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
     _kernelAddTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
     cudaDeviceSynchronize();

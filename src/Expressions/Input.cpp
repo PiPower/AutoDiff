@@ -1,6 +1,7 @@
 #include "Input.hpp"
 
 using namespace std;
+
 Input::Input(TensorShape shape, string name,TensorType dtype)
 :
 Expression(), name(name)
@@ -14,8 +15,7 @@ Expression(), name(name)
 
 void Input::build()
 {
-    tensorDescriptor = createTensorDescriptor(result->getType(), result->getShape());
-    buildResultCudaDesc();
+
 }
 
 void Input::execute()

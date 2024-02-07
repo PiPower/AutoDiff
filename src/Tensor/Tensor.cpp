@@ -9,6 +9,9 @@ Tensor::Tensor(TensorShape dim, TensorType dtype)
 :
 tensorDeviceMemory(nullptr), dtype(dtype)
 {
+    initCublas();
+    initCudnn();
+
     logErrorAndExit(dtype != TensorType::float32, "currently usupported tensor type\n");
     this->shape = dim;
     rank = dim.size();
@@ -30,6 +33,7 @@ tensorDeviceMemory(nullptr), dtype(dtype)
         err =cudaMalloc(&tensorDeviceMemory, typeSizeTable[(unsigned int)dtype]);
     }
     logErrorAndExit(err != cudaSuccess, "Could not allocate memory for tensor on GPU");
+    buildDescriptors();
 }
 
 void Tensor::setTensor_HostToDevice(void* data)
@@ -46,6 +50,11 @@ void Tensor::setTensor_HostToDevice(void* data)
 void* Tensor::getTensorPointer()
 {
     return tensorDeviceMemory;
+}
+
+DevicePointer *Tensor::getCudaDescriptorPointer()
+{
+    return cudaDescriptorDevice;
 }
 
 unsigned int Tensor::getNumberOfElements()
@@ -75,6 +84,11 @@ TensorShape Tensor::getShape()
     return shape;
 }
 
+TensorType Tensor::getType()
+{
+    return dtype;
+}
+
 char *Tensor::getTensorValues()
 {
     logErrorAndExit(tensorDeviceMemory == nullptr, "Copy dest is unallocated  tensor!\n");
@@ -88,7 +102,33 @@ char *Tensor::getTensorValues()
     return data;
 }
 
+void Tensor::buildDescriptors()
+{
+    TensorDesc cudaDescriptor;
+    cudaDescriptor.ndim = rank;
+    unsigned int stride =1;
+    for(int i = cudaDescriptor.ndim -1 ; i >=0; i--)
+    {
+        cudaDescriptor.dim[i] = shape[i];
+        cudaDescriptor.dimStrides[i] = stride;
+        stride *= cudaDescriptor.dim[i];
+    }
+    cudaError err;
+    err = cudaMalloc((void**)&cudaDescriptorDevice, sizeof(TensorDesc));
+    logErrorAndExit(err != cudaSuccess, "Could not allocate memory for tensor descriptor\n");
+    err =cudaMemcpy(cudaDescriptorDevice, &cudaDescriptor, sizeof(TensorDesc), cudaMemcpyHostToDevice);
+    logErrorAndExit(err != cudaSuccess, "Could not set tensor descriptor on gpu side\n");
+
+    tensorDescriptor = createTensorDescriptor(dtype, shape);
+}
+
 Tensor::~Tensor()
 {
     cudaFree(tensorDeviceMemory);
+}
+
+void Tensor::addTensors(Tensor *dest, Tensor *left, Tensor *right)
+{
+    addTensorsOp((float*) dest->tensorDeviceMemory, (float*)left->tensorDeviceMemory, 
+        (float*)right->tensorDeviceMemory, left->cudaDescriptorDevice, right->cudaDescriptorDevice);
 }

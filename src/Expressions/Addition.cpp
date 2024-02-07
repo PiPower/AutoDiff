@@ -32,16 +32,10 @@ void Addition::build()
 
     result = new Tensor(left_shape,  children[0]->getTensor()->getType());
     result->setTensor_DeviceToDevice(children[0]->getTensor()->getTensorPointer());
-
-    tensorDescriptor = createTensorDescriptor(result->getType(), result->getShape());
-
-    buildResultCudaDesc();
 }
 
 void Addition::execute()
 {
-   addTensors((float*)result->getTensorPointer(), (float*)children[0]->getTensor()->getTensorPointer(),
-   (float*)children[1]->getTensor()->getTensorPointer(), children[0]->getCudaDescriptor(), 
-   children[1]->getCudaDescriptor());
+   Tensor::addTensors(result, children[0]->getTensor(), children[1]->getTensor());
     
 }

@@ -88,13 +88,7 @@ void Graph::compileGraph()
 /*
 inits all variable nodes. 
 */
-void Graph::initVariables()
-{
-    for(Variable* var : variableList)
-    {
-        var->initVariable();
-    }
-}
+
 
 /*
 Creates all the required context for cuda and possibly other libraries. 
@@ -102,8 +96,6 @@ Calling more than once will cause memory leaks and may cause undefined behaviour
 */
 void Graph::build()
 {
-    initVariables();
-    
     for(Variable* node : variableList)
     {
         node->build();

@@ -11,7 +11,6 @@ class Graph
 public:
     Graph(Expression* graph);
     void compileGraph();
-    void initVariables();
     void build();
     void execute();
     void call(std::map<std::string, Tensor*>& inputs);

@@ -105,7 +105,6 @@ void* createTensorDescriptor(TensorType dtype, TensorShape shape)
     } 
 
     status = cudnnSetTensorNdDescriptor(desc, getDataType(dtype), dimCount, dim, dimStride);
-    //status = cudnnSetTensor4dDescriptor(desc,CUDNN_TENSOR_NCHW, getDataType(dtype),dim[0], dim[1], dim[2], dim[3]);
     cudnnExitOnError(status, "Cudnn tensor descriptor set failed! \n");
     delete[] dim;
     delete[] dimStride;
@@ -114,12 +113,12 @@ void* createTensorDescriptor(TensorType dtype, TensorShape shape)
 }
 
 void addTensors(const void *alpha,
-                const void* aDesc,  Tensor *Operand,
-                const void *beta,const void*  cDesc, Tensor *Destination)
+                const void* aDesc,  DevicePointer* OperandDevice,
+                const void *beta,const void*  cDesc, DevicePointer *DestinationDevice)
 {
     cudnnStatus_t status;
     status = cudnnAddTensor(*cudnnHandle, alpha, (cudnnTensorDescriptor_t)aDesc,
-    Destination->getTensorPointer(), beta, (cudnnTensorDescriptor_t)cDesc, Destination->getTensorPointer());
+    OperandDevice, beta, (cudnnTensorDescriptor_t)cDesc, DestinationDevice);
 #ifdef DEBUG
     cudnnExitOnError(status, "Cudnn could not start logging! \n");
 #endif

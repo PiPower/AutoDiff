@@ -18,17 +18,11 @@ Expression(), initializer(initializer)
     initializer->setTensorType(dtype);
 }
 
-void Variable::initVariable()
+void Variable::build()
 {
     char* copySource = initializer->generate(result->getNumberOfElements());
     result->setTensor_HostToDevice(copySource);
     delete[] copySource;
-}
-
-void Variable::build()
-{
-    tensorDescriptor = createTensorDescriptor(result->getType(), result->getShape());
-    buildResultCudaDesc();
 }
 
 void Variable::execute()

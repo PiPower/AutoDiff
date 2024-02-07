@@ -13,12 +13,11 @@ class Variable : public Expression
 public:
     Variable() = delete;
     Variable(TensorShape shape, Initializer* initializer, TensorType dtype = TensorType::float32);
-    void initVariable();
     void build();
     void execute();
 private:
-Initializer* initializer;
-Tensor* gradient;
+    Initializer* initializer;
+    Tensor* gradient;
 };
 
 #endif
