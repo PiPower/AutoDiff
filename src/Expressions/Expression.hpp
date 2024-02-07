@@ -19,6 +19,7 @@ public:
     Tensor* getTensor(){return result;}
     void* getDescriptor(){ return tensorDescriptor;}
     TensorDesc* getCudaDescriptor(){return cudaDescriptorDevice;}
+    void buildResultCudaDesc();
 protected:
     Expression();
 protected:

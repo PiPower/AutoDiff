@@ -1,11 +1,10 @@
 #include "Input.hpp"
 
-
-Input::Input(TensorShape shape, TensorType dtype)
+using namespace std;
+Input::Input(TensorShape shape, string name,TensorType dtype)
 :
-Expression()
+Expression(), name(name)
 {
-    
     for(int i =0;  i < shape.size(); i++ )
     {
           logErrorAndExit(shape[i] == 0, "Tensor cannot bet 0 along any dimension");
@@ -16,8 +15,19 @@ Expression()
 void Input::build()
 {
     tensorDescriptor = createTensorDescriptor(result->getType(), result->getShape());
+    buildResultCudaDesc();
 }
 
 void Input::execute()
 {
+}
+
+const string* Input::getName()
+{
+    return &name;
+}
+
+void Input::setInput(Tensor *t)
+{
+    result->setTensor_DeviceToDevice(t->getTensorPointer());
 }

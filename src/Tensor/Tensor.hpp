@@ -32,6 +32,7 @@ public:
     unsigned int getNumberOfElements();
     TensorShape getShape();
     TensorType getType();
+    ~Tensor();
 private:
     TensorShape shape;
     TensorType dtype;

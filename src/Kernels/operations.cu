@@ -19,13 +19,12 @@ __device__ void _resolveOffset(unsigned int* memoryLocation, TensorDesc* leftDes
         //change memory location in left(larger) tensor
         memoryLocation = memoryLocation - leftDim * leftDesc->dimStrides[i]; 
         //find aligned offset in right(smaller) tensor
-         *resultOffset += (leftDim%rightDesc->dim[i] ) * rightDesc->dimStrides[i];
+        *resultOffset += (leftDim%rightDesc->dim[i] ) * rightDesc->dimStrides[i];
     }
 }
 
 
-__global__ void _kernelAddTensors(float* dest, float* left, float* right, 
-                            TensorDesc* leftDesc, TensorDesc* rightDesc)
+__global__ void _kernelAddTensors(float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
     unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
@@ -37,8 +36,6 @@ __global__ void _kernelAddTensors(float* dest, float* left, float* right,
 
         threadIndex = threadIndex + blockDim.x * gridDim.x;
     }
-
-
 }
 
 

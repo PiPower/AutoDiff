@@ -35,31 +35,11 @@ void Addition::build()
 
     tensorDescriptor = createTensorDescriptor(result->getType(), result->getShape());
 
-    TensorDesc cudaDescriptor;
-    cudaDescriptor.ndim = result->getShape().size();
-    unsigned int stride =1;
-    for(int i = cudaDescriptor.ndim -1 ; i >=0; i--)
-    {
-        cudaDescriptor.dim[i] = result->getShape()[i];
-        cudaDescriptor.dimStrides[i] = stride;
-        stride *= cudaDescriptor.dim[i];
-    }
-    cudaError_t err;
-    err = cudaMalloc(&cudaDescriptorDevice, sizeof(TensorDesc));
-    logErrorAndExit(err != cudaSuccess, "Could not allocate memory for tensor descriptor\n");
-    err =cudaMemcpy(cudaDescriptorDevice, &cudaDescriptor, sizeof(TensorDesc), cudaMemcpyHostToDevice);
-    logErrorAndExit(err != cudaSuccess, "Could not set tensor descriptor on gpu side\n");
+    buildResultCudaDesc();
 }
 
 void Addition::execute()
 {
-    /*
-    float alpha = 1.0;
-    float beta = 1.0;
-    result->setTensor_DeviceToDevice(children[0]->getTensor()->getTensorPointer());
-    addTensors(&alpha, children[1]->getDescriptor(),children[1]->getTensor(), 
-    &beta, tensorDescriptor, result);
-    */
    addTensors((float*)result->getTensorPointer(), (float*)children[0]->getTensor()->getTensorPointer(),
    (float*)children[1]->getTensor()->getTensorPointer(), children[0]->getCudaDescriptor(), 
    children[1]->getCudaDescriptor());

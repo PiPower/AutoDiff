@@ -2,7 +2,7 @@
 #include "../Expressions/Variable.hpp"
 #include "../Expressions/Input.hpp"
 #include <vector>
-
+#include <map>
 #ifndef GRAPH 
 #define GRAPH
 
@@ -14,6 +14,7 @@ public:
     void initVariables();
     void build();
     void execute();
+    void call(std::map<std::string, Tensor*>& inputs);
 private:
 Expression* headOfGraph;
 //executing order of executionList is 1st, 2nd, .... , n_th

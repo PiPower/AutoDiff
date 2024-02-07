@@ -1,7 +1,7 @@
 #include "Graph.hpp"
 #include <stack>
 #include <algorithm>
-
+#include <iostream>
 using namespace std;
 
 Graph::Graph(Expression *graph)
@@ -102,6 +102,8 @@ Calling more than once will cause memory leaks and may cause undefined behaviour
 */
 void Graph::build()
 {
+    initVariables();
+    
     for(Variable* node : variableList)
     {
         node->build();
@@ -118,4 +120,22 @@ void Graph::execute()
     {
         node->execute();
     }
+}
+
+void Graph::call(std::map<std::string, Tensor*>& inputs)
+{
+    for(Input* input : inputList)
+    {
+        const string* name = input->getName();
+        auto iterator = inputs.find(*name);
+        if(iterator == inputs.cend())
+        {
+            cerr<<"Given input does not contrain tensor for input node: " << *name << endl;
+            exit(-1);
+        }
+        Tensor* in = iterator->second;
+        input->setInput(in);
+    }
+    
+    execute();
 }

@@ -88,7 +88,7 @@ char *Tensor::getTensorValues()
     return data;
 }
 
-TensorType Tensor::getType()
+Tensor::~Tensor()
 {
-    return dtype;
+    cudaFree(tensorDeviceMemory);
 }
