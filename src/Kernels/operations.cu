@@ -1,9 +1,10 @@
 #include "kernel_api.h"
 
 /*
-tensor dest MUST have the same dimensions as left and must be packed.
+all tensors must be Fully-Packed Tensors (https://docs.nvidia.com/deeplearning/cudnn/developer/core-concepts.html)
+tensor dest MUST have the same dimensions as left.
 each dimension x of left must satisfy x = c_i*y where y is 
-corresponding dimension of right and c_i > 0 is constant whole number for ith dimension
+corresponding dimension of right tensor and c_i > 0 is constant whole number for ith dimension
 If ubove conditions are not met, function has undefined behaviour
 */
 
@@ -27,12 +28,7 @@ __global__ void _kernelAddTensors(float* dest, float* left, float* right,
                             TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
     unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned int upper_memory_bound = 1;
-    for(int i = 0; i < leftDesc->ndim ; i++)
-    {  
-        upper_memory_bound = upper_memory_bound*leftDesc->dim[i];
-    }
-
+    unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
     while (threadIndex < upper_memory_bound)
     {
         unsigned int rightOffset = 0;
@@ -52,8 +48,8 @@ __global__ void _kernelAddTensors(float* dest, float* left, float* right,
 extern "C" void addTensors( float* dest, float* left, float* right, 
         TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
-     _kernelAddTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
-     cudaDeviceSynchronize();
+    _kernelAddTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
+    cudaDeviceSynchronize();
 }
 
 
