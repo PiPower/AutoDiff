@@ -119,7 +119,7 @@ void addTensors(const void *alpha,
 {
     cudnnStatus_t status;
     status = cudnnAddTensor(*cudnnHandle, alpha, (cudnnTensorDescriptor_t)aDesc,
-     Destination->getTensorPointer(), beta, (cudnnTensorDescriptor_t)cDesc, Destination->getTensorPointer());
+    Destination->getTensorPointer(), beta, (cudnnTensorDescriptor_t)cDesc, Destination->getTensorPointer());
 #ifdef DEBUG
     cudnnExitOnError(status, "Cudnn could not start logging! \n");
 #endif

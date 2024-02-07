@@ -2,9 +2,12 @@
 #include "CudaManagers/CublasManager.hpp"
 #include "CudaManagers/CudnnManager.hpp"
 #include "../Utils/error_logs.hpp"
+#include "../Kernels/kernel_api.h"
 
 #ifndef EXPRESSION
 #define EXPRESSION
+
+#define MAX_TENSOR_RANK 5
 
 class Graph;
 class Expression
@@ -15,6 +18,7 @@ public:
     virtual ~Expression();  
     Tensor* getTensor(){return result;}
     void* getDescriptor(){ return tensorDescriptor;}
+    TensorDesc* getCudaDescriptor(){return cudaDescriptorDevice;}
 protected:
     Expression();
 protected:
@@ -24,6 +28,7 @@ friend class Graph;
     std::vector<Expression*> children;
     Tensor* result;
     void* tensorDescriptor;
+    TensorDesc *cudaDescriptorDevice;
 };
 
 #endif

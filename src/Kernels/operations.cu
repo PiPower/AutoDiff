@@ -24,14 +24,20 @@ __device__ void _resolveOffset(unsigned int* memoryLocation, TensorDesc* leftDes
 
 
 __global__ void _kernelAddTensors(float* dest, float* left, float* right, 
-                            TensorDesc* leftDesc, TensorDesc* rightDesc, unsigned int* upper_memory_bound)
+                            TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
     unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
-    while (threadIndex < *upper_memory_bound)
+    unsigned int upper_memory_bound = 1;
+    for(int i = 0; i < leftDesc->ndim ; i++)
+    {  
+        upper_memory_bound = upper_memory_bound*leftDesc->dim[i];
+    }
+
+    while (threadIndex < upper_memory_bound)
     {
         unsigned int rightOffset = 0;
         _resolveOffset(&threadIndex, leftDesc, rightDesc, &rightOffset);
-        dest[threadIndex] = right[rightOffset]; 
+        dest[threadIndex] = left[threadIndex] + right[rightOffset]; 
 
         threadIndex = threadIndex + blockDim.x * gridDim.x;
     }
@@ -44,9 +50,10 @@ __global__ void _kernelAddTensors(float* dest, float* left, float* right,
 
 
 extern "C" void addTensors( float* dest, float* left, float* right, 
-        TensorDesc* leftDesc, TensorDesc* rightDesc, unsigned int* upper_memory_bound)
+        TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
-     _kernelAddTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc, upper_memory_bound);
+     _kernelAddTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
+     cudaDeviceSynchronize();
 }
 
 
