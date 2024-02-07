@@ -26,8 +26,10 @@ void Addition::build()
     logErrorAndExit( left_shape.size() != right_shape.size(),"Unmatching tensor shapes for addition node \n");
     for(int i =0;  i < left_shape.size(); i++ )
     {
-          logErrorAndExit(left_shape[i] != right_shape[i], "Unmatching tensor shapes for addition node \n");
-          logErrorAndExit(left_shape[i] == 0, "Tensor cannot bet 0 along any dimension");
+          logErrorAndExit(left_shape[i] == 0 && right_shape[i] !=0, "Tensor cannot bet 0 along any dimension");
+          float tensorDimProp = ((float)left_shape[i] )/right_shape[i] ;
+          float flooDimProp = floor(tensorDimProp);
+          logErrorAndExit(tensorDimProp != flooDimProp, "Unmatching tensor shapes for addition node \n");
     }
 
     result = new Tensor(left_shape,  children[0]->getTensor()->getType());
@@ -37,5 +39,4 @@ void Addition::build()
 void Addition::execute()
 {
    Tensor::addTensors(result, children[0]->getTensor(), children[1]->getTensor());
-    
 }
