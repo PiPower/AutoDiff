@@ -126,6 +126,11 @@ void destroyCudnnDescriptor(void *descriptor)
 #endif
 }
 
+void createCudnnMatmulDescriptor(TensorType dtype, TensorShape shape)
+{
+    
+}
+
 void addTensors(const void *alpha,
                 const void* OperandDesc,  DevicePointer* OperandDevice,
                 const void *beta,const void* DestinationDesc, DevicePointer *DestinationDevice)

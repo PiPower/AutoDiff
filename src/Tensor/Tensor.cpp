@@ -74,6 +74,11 @@ unsigned int Tensor::getNumberOfElements()
     return total_size;
 }
 
+unsigned int Tensor::getRank()
+{
+    return rank;
+}
+
 void Tensor::setTensor_DeviceToDevice(void *data)
 {
     logErrorAndExit(tensorDeviceMemory == nullptr, "Copy dest is unallocated  tensor!\n");
@@ -164,6 +169,39 @@ void Tensor::axisAlignedAccumulation(Tensor *dest, Tensor *src)
     axisAlignedAccumulationOp((float*)dest->tensorDeviceMemory, (float*)src->tensorDeviceMemory,
     dest->cudaDescriptorDevice, src->cudaDescriptorDevice);
 }
+
+/*
+    matmul of rank 2 tensors 
+    if tensor rank!=2 behaviour is undefined
+    We store tensors in row major format so instead of  A*B we get A^T*B^T
+    we wish to find C^T
+    from matmul properties for C = A * B we get C^T = B^T * A^T
+    ie reverse order of matricies
+*/
+void Tensor::matmul(Tensor *dest, Tensor *left, Tensor *right, bool transposeLeft, bool transposeRight)
+{
+    // negate because cublas expect column major
+    Tensor* a = right;
+    Tensor* b = left;
+    std::swap(transposeLeft, transposeRight);
+
+    int a_rows = a->shape[1];
+    int a_columns = a->shape[0];
+    if(transposeLeft) std::swap(a_rows, a_columns);
+
+    int b_rows = b->shape[1];
+    int b_columns = b->shape[0];
+    if(transposeRight) std::swap(b_rows, b_columns);
+
+    float alpha = 1.0f;
+    float beta = 0.0f;
+
+    cublasMatmul(transposeLeft, transposeRight, a_rows, b_columns, a_columns, &alpha, 
+    (float*)a->tensorDeviceMemory,transposeLeft ? a_columns : a_rows, (float*)b->tensorDeviceMemory, 
+    transposeRight? b_columns :b_rows, &beta, 
+    (float*)dest->tensorDeviceMemory, a_rows );
+}
+
 
 void Tensor::tensorReshape(TensorShape newShape)
 {
