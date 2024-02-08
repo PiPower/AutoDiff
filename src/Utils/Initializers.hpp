@@ -27,4 +27,15 @@ private:
     double std_dev;
 };
 
+class ConstantInitializer : public Initializer
+{
+public:
+    ConstantInitializer(float constant, TensorType dtype);
+    char* generate(unsigned int count);
+    void setTensorType(TensorType dtype);
+    ~ConstantInitializer();
+private:
+    TensorType dtype;
+    float constant;
+};
 #endif

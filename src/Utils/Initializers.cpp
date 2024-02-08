@@ -40,4 +40,31 @@ GaussianInitializer::~GaussianInitializer()
 {
 }
 
+ConstantInitializer::ConstantInitializer(float constant, TensorType dtype)
+:
+Initializer(), dtype(dtype), constant(constant)
+{
+}
 
+char *ConstantInitializer::generate(unsigned int count)
+{
+    if(dtype == TensorType::float32)
+    {
+        float* dataBuffer =  new float[count];
+        for(int i =0; i < count; i++)
+        {
+            dataBuffer[i] = constant;
+        }
+        return (char*)dataBuffer;
+    }
+    return nullptr;
+}
+
+void ConstantInitializer::setTensorType(TensorType dtype)
+{
+    this->dtype = dtype;
+}
+
+ConstantInitializer::~ConstantInitializer()
+{
+}
