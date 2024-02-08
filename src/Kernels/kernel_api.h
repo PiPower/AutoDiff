@@ -20,6 +20,7 @@ struct TensorDesc
 
 void addTensorsOp(float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);
 void mulTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);
+void axisAlignedAccumulationOp( float* dest, float* src, TensorDesc* destDesc, TensorDesc* srcDesc);
 
 #ifdef __cplusplus 
 }
