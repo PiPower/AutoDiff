@@ -29,7 +29,7 @@ void Variable::execute()
 {
 }
 
-BackwardData Variable::backwardPass(Tensor *propagatetGradient)
+BackwardData Variable::backwardPass(Tensor *propagatedGradient)
 {
     return BackwardData();
 }

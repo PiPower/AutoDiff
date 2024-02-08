@@ -132,14 +132,37 @@ void Graph::call(std::map<std::string, Tensor*>& inputs)
     execute();
 }
 
+Tensor *Graph::matchGradient(Expression *node, BackwardData &currentGradients)
+{
+    Tensor* gradOut = nullptr;
+    auto& grads = currentGradients.gradientTensors;
+    auto& nodes = currentGradients.nodeAddres;
+
+    for(int i = 0; i < grads.size(); i++)
+    {
+        if( nodes[i] == node)
+        {
+            gradOut = currentGradients.gradientTensors[i];
+            grads.erase( grads.begin() + i);
+            nodes.erase(nodes.begin() + i);
+        }
+    }
+
+    return gradOut;
+}
+
 void Graph::backwardPass()
 {
-    Tensor* identityScalar = Tensor::createWithConstant(1.0f, {});
+    Tensor* grad = Tensor::createWithConstant(1.0f, {});
     BackwardData gradientRouteData;
-    for(int i=executionList.size()-1; i >=0; i++)
+    for(int i=executionList.size()-1; i >=0; i--)
     {
-        gradientRouteData = executionList[i]->backwardPass(identityScalar);
-        
+        gradientRouteData = executionList[i]->backwardPass(grad);
+        delete grad;
+        if(i > 0)
+        {
+            grad = matchGradient(executionList[i-1], gradientRouteData);
+        }
     }
 
 }

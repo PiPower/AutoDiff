@@ -33,7 +33,7 @@ void Input::setInput(Tensor *t)
     result->setTensor_DeviceToDevice(t->getTensorPointer());
 }
 
-BackwardData Input::backwardPass(Tensor *propagatetGradient)
+BackwardData Input::backwardPass(Tensor *propagatedGradient)
 {
     return BackwardData();
 }

@@ -14,6 +14,7 @@ public:
     void build();
     void execute();
     void call(std::map<std::string, Tensor*>& inputs);
+    Tensor* matchGradient(Expression* node, BackwardData& currentGradients);
     void backwardPass();
 private:
 Expression* headOfGraph;

@@ -133,11 +133,21 @@ void Tensor::buildDescriptors()
 Tensor::~Tensor()
 {
     cudaFree(tensorDeviceMemory);
+    cudaFree(cudaDescriptorDevice);
+    if(cudnnDescriptorInitialized)
+        destroyCudnnDescriptor(cudnnTensorDescriptor);
+
 }
 
 void Tensor::addTensors(Tensor *dest, Tensor *left, Tensor *right)
 {
     addTensorsOp((float*) dest->tensorDeviceMemory, (float*)left->tensorDeviceMemory, 
+        (float*)right->tensorDeviceMemory, left->cudaDescriptorDevice, right->cudaDescriptorDevice);
+}
+
+void Tensor::mulTensors(Tensor *dest, Tensor *left, Tensor *right)
+{
+    mulTensorsOp((float*) dest->tensorDeviceMemory, (float*)left->tensorDeviceMemory, 
         (float*)right->tensorDeviceMemory, left->cudaDescriptorDevice, right->cudaDescriptorDevice);
 }
 
@@ -158,7 +168,7 @@ void Tensor::tensorReshape(TensorShape newShape)
     }
 
     logErrorAndExit(newNumberOfElements != getNumberOfElements(), 
-         "Not matching previous number of elements with new one");
+         "Not matching previous number of elements with new one \n");
 
     if(newShape.size() == 0 ) scalarTensor = true;
     if(newShape.size() > 0 ) scalarTensor = false;

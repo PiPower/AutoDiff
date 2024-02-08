@@ -16,7 +16,7 @@ public:
     virtual void execute() = 0;
     virtual ~Expression();  
     Tensor* getTensor(){return result;}
-    virtual BackwardData backwardPass(Tensor* propagatetGradient) = 0;
+    virtual BackwardData backwardPass(Tensor* propagatedGradient) = 0;
 protected:
     Expression();
 protected:
@@ -25,6 +25,7 @@ friend class Graph;
     bool addedToExecutionList; 
     std::vector<Expression*> children;
     Tensor* result;
+    Tensor* BackwardGradient;
 };
 
 
