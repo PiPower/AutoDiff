@@ -4,4 +4,5 @@ add_library(Expressions STATIC
     Expression.cpp
     Variable.cpp
     Input.cpp
+    ReduceSum.cpp
 )

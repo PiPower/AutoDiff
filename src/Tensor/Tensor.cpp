@@ -160,7 +160,10 @@ void Tensor::tensorReshape(TensorShape newShape)
     logErrorAndExit(newNumberOfElements != getNumberOfElements(), 
          "Not matching previous number of elements with new one");
 
+    if(newShape.size() == 0 ) scalarTensor = true;
+    if(newShape.size() > 0 ) scalarTensor = false;
     shape = newShape;
+    rank = newShape.size();
     buildDescriptors();
 }
 

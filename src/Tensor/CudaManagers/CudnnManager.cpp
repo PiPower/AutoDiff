@@ -105,7 +105,7 @@ void* createCudnnDescriptor(TensorType dtype, TensorShape shape)
     for(int i =  dimCount - 1, j = shape.size()-1; i >= 0; i--, j--)
     {
         dim[i] =  j >= 0? shape[j] : 1;
-        dimStride[i] =  j>=0 ? stride : 1;
+        dimStride[i] = stride;
         stride = stride * dim[i];
     } 
 
