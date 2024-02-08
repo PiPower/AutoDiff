@@ -14,7 +14,9 @@ Expression(), keepDim(keepDim), axis(reduce_axis)
 void ReduceSum::build()
 {
     // all axis to be reduced are set to 1
-    TensorShape reducedShape = children[0]->getTensor()->getShape();
+    reducedShape = children[0]->getTensor()->getShape();
+    //allocating tensor for backward pass 
+    ones = new Tensor(reducedShape,  children[0]->getTensor()->getType());
 
     for(int i=0; i < reducedShape.size(); i++)
     {
@@ -36,7 +38,14 @@ void ReduceSum::execute()
     if(!keepDim) result->tensorReshape(newShape);
 }
 
-BackwardData ReduceSum::backwardPass(Tensor *propagatetGradient)
+BackwardData ReduceSum::backwardPass(Tensor *propagatedGradient)
 {
-    return BackwardData();
+    BackwardData out;
+    propagatedGradient->tensorReshape(reducedShape);
+    Tensor *grad = new Tensor( children[0]->getTensor()->getShape(),  children[0]->getTensor()->getType());
+    Tensor::mulTensors(grad, ones, propagatedGradient);
+
+    out.nodeAddres.push_back(children[0]);
+    out.gradientTensors.push_back(grad);
+    return out;
 }
