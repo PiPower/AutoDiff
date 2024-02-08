@@ -7,7 +7,7 @@ unsigned char typeSizeTable[] = {2, 4, 8, 2, 4, 8, 2, 4, 8};
 
 Tensor::Tensor(TensorShape dim, TensorType dtype)
 :
-tensorDeviceMemory(nullptr), dtype(dtype)
+tensorDeviceMemory(nullptr), dtype(dtype), cudnnDescriptorInitialized(false)
 {
     initCublas();
     initCudnn();
@@ -30,9 +30,13 @@ tensorDeviceMemory(nullptr), dtype(dtype)
     else
     {
         // rank 0 tensor ie scalar
+        scalarTensor = true;
         err =cudaMalloc(&tensorDeviceMemory, typeSizeTable[(unsigned int)dtype]);
     }
     logErrorAndExit(err != cudaSuccess, "Could not allocate memory for tensor on GPU");
+
+    err = cudaMalloc((void**)&cudaDescriptorDevice, sizeof(TensorDesc));
+    logErrorAndExit(err != cudaSuccess, "Could not allocate memory for tensor descriptor\n");
     buildDescriptors();
 }
 
@@ -59,6 +63,8 @@ DevicePointer *Tensor::getCudaDescriptorPointer()
 
 unsigned int Tensor::getNumberOfElements()
 {
+    if(scalarTensor) return 1;
+
     unsigned int total_size = 1;
     for(auto& dimSize : shape)
     {
@@ -103,7 +109,10 @@ char *Tensor::getTensorValues()
 }
 
 void Tensor::buildDescriptors()
-{
+{   
+    if(cudnnDescriptorInitialized)
+        destroyCudnnDescriptor(cudnnTensorDescriptor);
+
     TensorDesc cudaDescriptor;
     cudaDescriptor.ndim = rank;
     unsigned int stride =1;
@@ -114,12 +123,11 @@ void Tensor::buildDescriptors()
         stride *= cudaDescriptor.dim[i];
     }
     cudaError err;
-    err = cudaMalloc((void**)&cudaDescriptorDevice, sizeof(TensorDesc));
-    logErrorAndExit(err != cudaSuccess, "Could not allocate memory for tensor descriptor\n");
     err =cudaMemcpy(cudaDescriptorDevice, &cudaDescriptor, sizeof(TensorDesc), cudaMemcpyHostToDevice);
     logErrorAndExit(err != cudaSuccess, "Could not set tensor descriptor on gpu side\n");
 
-    tensorDescriptor = createTensorDescriptor(dtype, shape);
+    cudnnTensorDescriptor = createCudnnDescriptor(dtype, shape);
+    cudnnDescriptorInitialized = true;
 }
 
 Tensor::~Tensor()
@@ -132,3 +140,40 @@ void Tensor::addTensors(Tensor *dest, Tensor *left, Tensor *right)
     addTensorsOp((float*) dest->tensorDeviceMemory, (float*)left->tensorDeviceMemory, 
         (float*)right->tensorDeviceMemory, left->cudaDescriptorDevice, right->cudaDescriptorDevice);
 }
+
+void Tensor::reduceTensor(cudnnReduceTensorDescriptor_t reduceDesc, Tensor* dest, Tensor* src)
+{
+    float alpha = 1;
+    float beta = 0;
+    reduceTensors(reduceDesc,&alpha, src->tensorDeviceMemory, 
+        src->cudnnTensorDescriptor, &beta, dest->cudnnTensorDescriptor, dest->tensorDeviceMemory);
+}
+
+void Tensor::tensorReshape(TensorShape newShape)
+{
+    unsigned int newNumberOfElements = 1;
+    for(int i = newShape.size() -1 ; i >=0; i--)
+    {
+       newNumberOfElements*= newShape[i];
+    }
+
+    logErrorAndExit(newNumberOfElements != getNumberOfElements(), 
+         "Not matching previous number of elements with new one");
+
+    shape = newShape;
+    buildDescriptors();
+}
+
+Tensor *Tensor::createWithConstant(float value, TensorShape shape, TensorType dtype)
+{
+    Tensor* out = new Tensor(shape, dtype);
+    float* mem = new float[out->getNumberOfElements()];
+    for(int i=0; i < out->getNumberOfElements(); i++)
+    {
+        mem[i] = value;
+    }
+    out->setTensor_HostToDevice(mem);
+
+    delete[] mem;
+    return out;
+}   

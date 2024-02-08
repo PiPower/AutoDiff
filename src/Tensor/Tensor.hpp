@@ -13,6 +13,7 @@ class Tensor
 {
 public:
     Tensor(TensorShape dim = {}, TensorType dtype = TensorType::float32);
+    Tensor(Tensor& src) = delete;
     DevicePointer* getTensorPointer();
     DevicePointer* getCudaDescriptorPointer();
     void setTensor_HostToDevice(void* data);
@@ -25,13 +26,19 @@ public:
     ~Tensor();
 
     // Tensor ops
+        void tensorReshape(TensorShape newShape);
     static void addTensors(Tensor* dest, Tensor* left, Tensor* right);
+    static void reduceTensor(cudnnReduceTensorDescriptor_t reduceDesc, Tensor* dest, Tensor* src);
+    //Tensor helpers
+    static Tensor* createWithConstant(float value, TensorShape shape, TensorType dtype = TensorType::float32);
 private:
     TensorShape shape;
     TensorType dtype;
     DevicePointer* tensorDeviceMemory;
     unsigned int rank;
-    DevicePointer* tensorDescriptor;
+    bool scalarTensor;
+    DevicePointer* cudnnTensorDescriptor;
     TensorDesc *cudaDescriptorDevice;
+    bool cudnnDescriptorInitialized; 
 };
 #endif

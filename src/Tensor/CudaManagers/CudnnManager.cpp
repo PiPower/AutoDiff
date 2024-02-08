@@ -1,8 +1,11 @@
 #include "CudnnManager.hpp"
 #include <cstdio>
 #include <stdlib.h>
+#include "../../Utils/error_logs.hpp"
 #include <iostream>
 cudnnHandle_t* cudnnHandle = nullptr;
+DevicePointer* workSpaceDvcPointer = nullptr;
+unsigned int workSpaceSize = 100000;
 
 cudnnDataType_t getDataType(TensorType dtype)
 {
@@ -65,12 +68,14 @@ void initCudnn()
     cudnnHandle = (cudnnHandle_t*)malloc(sizeof(cudnnHandle_t));
     cudnnStatus_t status = cudnnCreate(cudnnHandle);
     cudnnExitOnError(status, "Cudnn initialization failed! \n");
-
 #ifdef DEBUG
 //for logging to work CUDNN_LOGDEST_DBG MUST be set to desired output: stdout or stderr or file
     status = cudnnSetCallback(0x0F, NULL, NULL );
     cudnnExitOnError(status, "Cudnn could not start logging! \n");
 #endif
+    cudaError err;
+    err = cudaMalloc(&workSpaceDvcPointer, workSpaceSize);
+    logErrorAndExit(err != cudaSuccess, "could not allocate memory for cudnn workspace");
 }
 
 void destroyCudnn()
@@ -81,11 +86,11 @@ void destroyCudnn()
         cudnnExitOnError(status, "Cudnn destruction failed! \n");
         delete cudnnHandle;
         cudnnHandle = nullptr;
-
+        cudaFree(workSpaceDvcPointer);
     }
 }
 
-void* createTensorDescriptor(TensorType dtype, TensorShape shape)
+void* createCudnnDescriptor(TensorType dtype, TensorShape shape)
 {
     cudnnTensorDescriptor_t desc;
     cudnnStatus_t status = cudnnCreateTensorDescriptor(&desc);
@@ -112,14 +117,46 @@ void* createTensorDescriptor(TensorType dtype, TensorShape shape)
     return desc;
 }
 
-void addTensors(const void *alpha,
-                const void* aDesc,  DevicePointer* OperandDevice,
-                const void *beta,const void*  cDesc, DevicePointer *DestinationDevice)
+void destroyCudnnDescriptor(void *descriptor)
 {
     cudnnStatus_t status;
-    status = cudnnAddTensor(*cudnnHandle, alpha, (cudnnTensorDescriptor_t)aDesc,
-    OperandDevice, beta, (cudnnTensorDescriptor_t)cDesc, DestinationDevice);
+    status = cudnnDestroyTensorDescriptor((cudnnTensorDescriptor_t )descriptor);
+#ifdef DEBUG
+    cudnnExitOnError(status, "Cudnn could not destroy descriptor \n");
+#endif
+}
+
+void addTensors(const void *alpha,
+                const void* OperandDesc,  DevicePointer* OperandDevice,
+                const void *beta,const void* DestinationDesc, DevicePointer *DestinationDevice)
+{
+    cudnnStatus_t status;
+    status = cudnnAddTensor(*cudnnHandle, alpha, (cudnnTensorDescriptor_t)OperandDesc,
+    OperandDevice, beta, (cudnnTensorDescriptor_t)DestinationDesc, DestinationDevice);
+    cudaDeviceSynchronize();
 #ifdef DEBUG
     cudnnExitOnError(status, "Cudnn could not start logging! \n");
 #endif
+}
+
+cudnnReduceTensorDescriptor_t createCudnnReduceDescriptor(cudnnReduceTensorOp_t reduce_op)
+{
+    cudnnReduceTensorDescriptor_t desc;
+    cudnnStatus_t status = cudnnCreateReduceTensorDescriptor(&desc); 
+    cudnnExitOnError(status, "Cudnn tensor reduce descriptor failed! \n");
+    status = cudnnSetReduceTensorDescriptor(desc, reduce_op, 
+    CUDNN_DATA_FLOAT, CUDNN_PROPAGATE_NAN, CUDNN_REDUCE_TENSOR_NO_INDICES, CUDNN_32BIT_INDICES );
+
+    return desc;
+}
+
+void reduceTensors(const cudnnReduceTensorDescriptor_t reduceTensorDesc,  
+                    const void *alpha, DevicePointer *Operand, const void* OperandDesc,
+                    const void *beta, const void* DestinationDesc, DevicePointer *Destination)
+{
+    cudnnReduceTensor(*cudnnHandle, reduceTensorDesc,nullptr,0,workSpaceDvcPointer,
+    workSpaceSize,alpha,(cudnnTensorDescriptor_t)OperandDesc, Operand,
+    beta, (cudnnTensorDescriptor_t)DestinationDesc, Destination);
+
+    cudaDeviceSynchronize();
 }
