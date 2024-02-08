@@ -15,6 +15,7 @@ public:
     Variable(TensorShape shape, Initializer* initializer, TensorType dtype = TensorType::float32);
     void build();
     void execute();
+     BackwardData backwardPass(Tensor* propagatetGradient);
 private:
     Initializer* initializer;
     Tensor* gradient;

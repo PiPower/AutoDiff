@@ -28,3 +28,8 @@ void Variable::build()
 void Variable::execute()
 {
 }
+
+BackwardData Variable::backwardPass(Tensor *propagatetGradient)
+{
+    return BackwardData();
+}

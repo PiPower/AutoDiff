@@ -131,3 +131,15 @@ void Graph::call(std::map<std::string, Tensor*>& inputs)
     
     execute();
 }
+
+void Graph::backwardPass()
+{
+    Tensor* identityScalar = Tensor::createWithConstant(1.0f, {});
+    BackwardData gradientRouteData;
+    for(int i=executionList.size()-1; i >=0; i++)
+    {
+        gradientRouteData = executionList[i]->backwardPass(identityScalar);
+        
+    }
+
+}

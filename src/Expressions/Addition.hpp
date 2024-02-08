@@ -9,6 +9,7 @@ public:
     Addition( Expression* left_side, Expression* right_side);
     void build();
     void execute();
+    BackwardData backwardPass(Tensor* propagatetGradient);
 };
 
 #endif

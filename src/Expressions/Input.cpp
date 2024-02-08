@@ -29,5 +29,11 @@ const string* Input::getName()
 
 void Input::setInput(Tensor *t)
 {
+    logErrorAndExit(result->getShape() == t->getShape(), "incorrect shapes for assignment in Input node");
     result->setTensor_DeviceToDevice(t->getTensorPointer());
+}
+
+BackwardData Input::backwardPass(Tensor *propagatetGradient)
+{
+    return BackwardData();
 }

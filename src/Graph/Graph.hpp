@@ -14,6 +14,7 @@ public:
     void build();
     void execute();
     void call(std::map<std::string, Tensor*>& inputs);
+    void backwardPass();
 private:
 Expression* headOfGraph;
 //executing order of executionList is 1st, 2nd, .... , n_th

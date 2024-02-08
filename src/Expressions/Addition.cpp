@@ -40,3 +40,8 @@ void Addition::execute()
 {
    Tensor::addTensors(result, children[0]->getTensor(), children[1]->getTensor());
 }
+
+BackwardData Addition::backwardPass(Tensor *propagatetGradient)
+{
+    return BackwardData();
+}
