@@ -12,7 +12,6 @@ Expression()
 
     children.push_back(left_side);
     children.push_back(right_side);
-
 }
 
 void Addition::build()
@@ -41,7 +40,27 @@ void Addition::execute()
    Tensor::addTensors(result, children[0]->getTensor(), children[1]->getTensor());
 }
 
-BackwardData Addition::backwardPass(Tensor *propagatetGradient)
+void Addition::backwardPass(Tensor *propagatedGradient, BackwardData& storedGradients)
 {
-    return BackwardData();
+    Tensor *grad_x = new Tensor( result->getShape(),  result->getType());
+    Tensor *grad_y = new Tensor( children[1]->getTensor()->getShape(), children[1]->getTensor()->getType());
+    //because we assumed that x_dim_i >= y_dim_i due to chain rule in case of 
+    // x and y having different dims we must accumulate grad along correct axies of y
+    grad_x->setTensor_DeviceToDevice(propagatedGradient->getTensorPointer());
+
+    if(grad_y->getShape() !=  grad_x->getShape())
+    {
+        Tensor::axisAlignedAccumulation(grad_y, propagatedGradient);
+    }
+    else
+    {
+        grad_y->setTensor_DeviceToDevice(propagatedGradient->getTensorPointer());
+    }
+
+    storedGradients.nodeAddres.push_back(children[0]);
+    storedGradients.nodeAddres.push_back(children[1]);
+
+    storedGradients.gradientTensors.push_back(grad_x);
+    storedGradients.gradientTensors.push_back(grad_y);
+
 }

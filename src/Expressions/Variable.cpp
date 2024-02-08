@@ -29,7 +29,12 @@ void Variable::execute()
 {
 }
 
-BackwardData Variable::backwardPass(Tensor *propagatedGradient)
+void Variable::backwardPass(Tensor *propagatedGradient, BackwardData& storedGradients)
 {
-    return BackwardData();
+   
+}
+
+void Variable::applyGradients(Tensor *propagatedGradient)
+{
+    Tensor::addTensors(result, result, propagatedGradient);
 }

@@ -16,8 +16,10 @@ public:
     void call(std::map<std::string, Tensor*>& inputs);
     Tensor* matchGradient(Expression* node, BackwardData& currentGradients);
     void backwardPass();
+    void applyGradients();
 private:
 Expression* headOfGraph;
+BackwardData gradientRouteData;
 //executing order of executionList is 1st, 2nd, .... , n_th
 std::vector<Expression*> executionList;
 std::vector<Variable*> variableList;

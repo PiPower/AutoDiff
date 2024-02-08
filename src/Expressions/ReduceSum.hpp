@@ -12,7 +12,7 @@ public:
     ReduceSum( Expression* child_node, std::vector<unsigned int> reduce_axis, bool keepDim = false);
     void build();
     void execute();
-    BackwardData backwardPass(Tensor* propagatedGradient);
+    void backwardPass(Tensor* propagatedGradient, BackwardData& storedGradients);
 private:
     std::vector<unsigned int> axis;
     TensorShape newShape;

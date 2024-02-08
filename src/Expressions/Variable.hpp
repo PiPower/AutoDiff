@@ -15,10 +15,10 @@ public:
     Variable(TensorShape shape, Initializer* initializer, TensorType dtype = TensorType::float32);
     void build();
     void execute();
-    BackwardData backwardPass(Tensor* propagatedGradient);
+    void backwardPass(Tensor* propagatedGradient, BackwardData& storedGradients);
+    void applyGradients(Tensor* propagatedGradient);
 private:
     Initializer* initializer;
-    Tensor* gradient;
 };
 
 #endif

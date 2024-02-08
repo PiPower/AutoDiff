@@ -16,7 +16,7 @@ public:
     virtual void execute() = 0;
     virtual ~Expression();  
     Tensor* getTensor(){return result;}
-    virtual BackwardData backwardPass(Tensor* propagatedGradient) = 0;
+    virtual void backwardPass(Tensor* propagatedGradient, BackwardData& storedGradients) = 0;
 protected:
     Expression();
 protected:

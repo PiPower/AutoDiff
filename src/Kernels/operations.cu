@@ -51,9 +51,10 @@ __global__ void _kernelMulTensors(float* dest, float* left, float* right, Tensor
         threadIndex = threadIndex + blockDim.x * gridDim.x;
     }
 }
+
 /*
-lets assume we have tensor x{i_1, i_2, ... , i_k} and y{a * i_1, b* i_2, ... , c* i_k} 
-where  a,b,c > 0 are ints and k <=5
+lets assume we have tensor x{i_1, i_2, ... , i_k} and y{a_1 * i_1, a_2* i_2, ... , a_k* i_k} 
+where  a_1, a_2, ... , a_k > 0 are ints and k <=5
 op below is used to sum over aligned axes
 simple example
 x{5} and y{20} 
@@ -65,6 +66,7 @@ x[1] = y[1] + y[6]+ y[11]+ y[16]
 x[5] = y[5] + y[10]+ y[15]+ y[20]
 Disclaimer:
 current implementation is quire slow due to atomicAdd
+if possible should be avoided
 */
 __global__ void _kernelAxisAlignedAccumulation(float* dest, float* src, TensorDesc* destDesc, TensorDesc* srcDesc)
 {

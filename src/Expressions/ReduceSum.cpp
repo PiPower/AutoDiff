@@ -38,14 +38,13 @@ void ReduceSum::execute()
     if(!keepDim) result->tensorReshape(newShape);
 }
 
-BackwardData ReduceSum::backwardPass(Tensor *propagatedGradient)
+void ReduceSum::backwardPass(Tensor *propagatedGradient, BackwardData& storedGradients)
 {
-    BackwardData out;
     propagatedGradient->tensorReshape(reducedShape);
     Tensor *grad = new Tensor( children[0]->getTensor()->getShape(),  children[0]->getTensor()->getType());
     Tensor::mulTensors(grad, ones, propagatedGradient);
 
-    out.nodeAddres.push_back(children[0]);
-    out.gradientTensors.push_back(grad);
-    return out;
+    storedGradients.nodeAddres.push_back(children[0]);
+    storedGradients.gradientTensors.push_back(grad);
+   
 }

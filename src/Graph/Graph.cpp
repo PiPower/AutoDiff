@@ -145,6 +145,20 @@ Tensor *Graph::matchGradient(Expression *node, BackwardData &currentGradients)
             gradOut = currentGradients.gradientTensors[i];
             grads.erase( grads.begin() + i);
             nodes.erase(nodes.begin() + i);
+            break;
+        }
+    }
+
+    int grad_count = grads.size();
+    for(int i = 0; i < grad_count; i++)
+    {
+        if( nodes[i] == node)
+        {
+            Tensor::addTensors(gradOut,gradOut, currentGradients.gradientTensors[i]);
+            grads.erase(grads.begin() + i);
+            nodes.erase(nodes.begin() + i);
+            grad_count--;
+            i--;
         }
     }
 
@@ -154,15 +168,27 @@ Tensor *Graph::matchGradient(Expression *node, BackwardData &currentGradients)
 void Graph::backwardPass()
 {
     Tensor* grad = Tensor::createWithConstant(1.0f, {});
-    BackwardData gradientRouteData;
     for(int i=executionList.size()-1; i >=0; i--)
     {
-        gradientRouteData = executionList[i]->backwardPass(grad);
+        executionList[i]->backwardPass(grad, gradientRouteData);
         delete grad;
         if(i > 0)
         {
             grad = matchGradient(executionList[i-1], gradientRouteData);
+            logErrorAndExit(grad == nullptr, "No gradient for op node\n");
+            
         }
     }
+    //all the remaining gradient belong to Variables/Inputs
+}
 
+void Graph::applyGradients()
+{
+    for(Variable* var : variableList)
+    {
+        Tensor* grad = matchGradient(var, gradientRouteData);
+        logErrorAndExit(grad == nullptr, "No gradient for variable node\n");
+        var->applyGradients(grad);
+        delete grad;
+    }
 }

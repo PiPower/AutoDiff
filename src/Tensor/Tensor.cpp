@@ -159,6 +159,12 @@ void Tensor::reduceTensor(cudnnReduceTensorDescriptor_t reduceDesc, Tensor* dest
         src->cudnnTensorDescriptor, &beta, dest->cudnnTensorDescriptor, dest->tensorDeviceMemory);
 }
 
+void Tensor::axisAlignedAccumulation(Tensor *dest, Tensor *src)
+{
+    axisAlignedAccumulationOp((float*)dest->tensorDeviceMemory, (float*)src->tensorDeviceMemory,
+    dest->cudaDescriptorDevice, src->cudaDescriptorDevice);
+}
+
 void Tensor::tensorReshape(TensorShape newShape)
 {
     unsigned int newNumberOfElements = 1;

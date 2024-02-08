@@ -16,7 +16,7 @@ public:
     void execute();
     const std::string* getName();
     void setInput(Tensor* t);
-    BackwardData backwardPass(Tensor* propagatedGradient);
+    void backwardPass(Tensor* propagatedGradient, BackwardData& storedGradients);
 private:
     std::string name;
 };
