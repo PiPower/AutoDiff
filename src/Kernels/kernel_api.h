@@ -19,6 +19,7 @@ struct TensorDesc
 };
 
 void addTensorsOp(float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);
+void mulTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);
 
 #ifdef __cplusplus 
 }
