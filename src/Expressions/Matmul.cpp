@@ -38,4 +38,15 @@ void Matmul::execute()
 
 void Matmul::backwardPass(Tensor *propagatedGradient, BackwardData &storedGradients)
 {
+    Tensor *grad_left = new Tensor(  children[0]->getTensor()->getShape(), children[0]->getTensor()->getType());
+    Tensor *grad_right = new Tensor( children[1]->getTensor()->getShape(), children[1]->getTensor()->getType());
+
+    Tensor::matmul(grad_left, propagatedGradient, children[1]->getTensor(), false, true);
+    Tensor::matmul(grad_right, children[0]->getTensor(), propagatedGradient, true, false);
+
+    storedGradients.gradientTensors.push_back(grad_left);
+    storedGradients.nodeAddres.push_back(children[0]);
+
+    storedGradients.gradientTensors.push_back(grad_right);
+    storedGradients.nodeAddres.push_back(children[1]);
 }

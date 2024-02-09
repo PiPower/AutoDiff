@@ -155,6 +155,7 @@ Tensor *Graph::matchGradient(Expression *node, BackwardData &currentGradients)
         if( nodes[i] == node)
         {
             Tensor::addTensors(gradOut,gradOut, currentGradients.gradientTensors[i]);
+            delete currentGradients.gradientTensors[i];
             grads.erase(grads.begin() + i);
             nodes.erase(nodes.begin() + i);
             grad_count--;

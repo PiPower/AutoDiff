@@ -159,9 +159,13 @@ void reduceTensors(const cudnnReduceTensorDescriptor_t reduceTensorDesc,
                     const void *alpha, DevicePointer *Operand, const void* OperandDesc,
                     const void *beta, const void* DestinationDesc, DevicePointer *Destination)
 {
-    cudnnReduceTensor(*cudnnHandle, reduceTensorDesc,nullptr,0,workSpaceDvcPointer,
+    cudnnStatus_t status;
+    status = cudnnReduceTensor(*cudnnHandle, reduceTensorDesc,nullptr,0,workSpaceDvcPointer,
     workSpaceSize,alpha,(cudnnTensorDescriptor_t)OperandDesc, Operand,
     beta, (cudnnTensorDescriptor_t)DestinationDesc, Destination);
 
     cudaDeviceSynchronize();
+#ifdef DEBUG
+    cudnnExitOnError(status, "Cudnn could not start logging! \n");
+#endif
 }

@@ -54,5 +54,5 @@ void cublasMatmul( bool transLeft, bool transRight, int m, int n, int k,
                         m, n, k, alpha, left, 
                         lda, right, ldb, beta, dest, ldc);
     cublasExitOnError(status, "cublas matmul error \n");
-
+    cudaDeviceSynchronize();
 }
