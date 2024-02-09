@@ -150,6 +150,12 @@ void Tensor::addTensors(Tensor *dest, Tensor *left, Tensor *right)
         (float*)right->tensorDeviceMemory, left->cudaDescriptorDevice, right->cudaDescriptorDevice);
 }
 
+void Tensor::subtractTensors(Tensor *dest, Tensor *left, Tensor *right)
+{
+    subtractTensorsOp((float*) dest->tensorDeviceMemory, (float*)left->tensorDeviceMemory, 
+        (float*)right->tensorDeviceMemory, left->cudaDescriptorDevice, right->cudaDescriptorDevice);
+}
+
 void Tensor::mulTensors(Tensor *dest, Tensor *left, Tensor *right)
 {
     mulTensorsOp((float*) dest->tensorDeviceMemory, (float*)left->tensorDeviceMemory, 
@@ -202,6 +208,12 @@ void Tensor::matmul(Tensor *dest, Tensor *left, Tensor *right, bool transposeLef
     (float*)dest->tensorDeviceMemory, a_rows );
 }
 
+void Tensor::scaleByConstant(Tensor *dest, Tensor *operand, DevicePointer *scalar)
+{
+    logErrorAndExit(dest->getShape() != operand->getShape(), 
+         "Not matching dimensions of dest and operand for scale by constant \n");
+    scaleByConstantOp((float*)dest->tensorDeviceMemory, (float*)operand->tensorDeviceMemory,  (float*)scalar, operand->cudaDescriptorDevice);
+}
 
 void Tensor::tensorReshape(TensorShape newShape)
 {

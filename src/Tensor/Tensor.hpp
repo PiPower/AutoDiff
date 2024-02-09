@@ -29,10 +29,12 @@ public:
     // Tensor ops
     void tensorReshape(TensorShape newShape);
     static void addTensors(Tensor* dest, Tensor* left, Tensor* right);
+    static void subtractTensors(Tensor* dest, Tensor* left, Tensor* right);
     static void mulTensors(Tensor* dest, Tensor* left, Tensor* right);
     static void reduceTensor(cudnnReduceTensorDescriptor_t reduceDesc, Tensor* dest, Tensor* src);
     static void axisAlignedAccumulation(Tensor* dest, Tensor* src);
     static void matmul(Tensor* dest, Tensor* left, Tensor* right, bool transposeLeft = false, bool transposeRight= false);
+    static void scaleByConstant(Tensor* dest, Tensor* operand, DevicePointer* scalar);
     //Tensor helpers
     static Tensor* createWithConstant(float value, TensorShape shape, TensorType dtype = TensorType::float32);
 private:

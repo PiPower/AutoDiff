@@ -38,6 +38,20 @@ __global__ void _kernelAddTensors(float* dest, float* left, float* right, Tensor
     }
 }
 
+__global__ void _kernelSubtractTensors(float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
+{
+    unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
+    while (threadIndex < upper_memory_bound)
+    {
+        unsigned int rightOffset = 0;
+        _resolveOffset(&threadIndex, leftDesc, rightDesc, &rightOffset);
+        dest[threadIndex] = left[threadIndex] - right[rightOffset]; 
+
+        threadIndex = threadIndex + blockDim.x * gridDim.x;
+    }
+}
+
 __global__ void _kernelMulTensors(float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
     unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
@@ -82,6 +96,18 @@ __global__ void _kernelAxisAlignedAccumulation(float* dest, float* src, TensorDe
     }
 }
 
+// dim_dest == dim_operand
+__global__ void _kernelScaleByConstant(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
+{
+    unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
+    while (threadIndex < upper_memory_bound)
+    {
+        dest[threadIndex] = (*scalar) * operand[threadIndex]; 
+        threadIndex = threadIndex + blockDim.x * gridDim.x;
+    }
+}
+
 
 extern "C" void addTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
@@ -89,6 +115,11 @@ extern "C" void addTensorsOp( float* dest, float* left, float* right, TensorDesc
     cudaDeviceSynchronize();
 }
 
+extern "C" void subtractTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
+{
+    _kernelSubtractTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
+    cudaDeviceSynchronize();
+}
 extern "C" void mulTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
     _kernelMulTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
@@ -98,5 +129,11 @@ extern "C" void mulTensorsOp( float* dest, float* left, float* right, TensorDesc
 extern "C" void axisAlignedAccumulationOp( float* dest, float* src, TensorDesc* destDesc, TensorDesc* srcDesc)
 {
     _kernelAxisAlignedAccumulation<<<16,16>>>(dest, src, destDesc, srcDesc);
+    cudaDeviceSynchronize();
+}
+
+extern "C" void scaleByConstantOp(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
+{
+    _kernelScaleByConstant<<<16,16>>>(dest, operand, scalar, leftDesc);
     cudaDeviceSynchronize();
 }

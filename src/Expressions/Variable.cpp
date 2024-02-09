@@ -36,5 +36,5 @@ void Variable::backwardPass(Tensor *propagatedGradient, BackwardData& storedGrad
 
 void Variable::applyGradients(Tensor *propagatedGradient)
 {
-    Tensor::addTensors(result, result, propagatedGradient);
+    Tensor::subtractTensors(result, result, propagatedGradient);
 }
