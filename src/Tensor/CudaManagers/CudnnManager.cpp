@@ -199,7 +199,22 @@ void activationFunctionBackward(cudnnActivationDescriptor_t opDesc, DevicePointe
     cudnnStatus_t status;
     status = cudnnActivationBackward(*cudnnHandle, opDesc, &alpha, prevOutputDesc, prevOutput, gradDesc,
                                 grad, prevInputDesc, prevInput, &beta, destDesc, dest );
-                                    cudaDeviceSynchronize();
+    cudaDeviceSynchronize();
+#ifdef DEBUG
+    cudnnExitOnError(status, "activation function backward pass error! \n");
+#endif
+}
+
+void softmaxFunctionForward(DevicePointer *dest, DevicePointer *Operand, 
+                        cudnnTensorDescriptor_t destDesc, cudnnTensorDescriptor_t OperandDesc)
+{
+    float alpha = 1;
+    float beta = 0;
+
+    cudnnStatus_t status;
+    status = cudnnSoftmaxForward(*cudnnHandle,CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_CHANNEL ,
+                                    &alpha, OperandDesc, Operand, &beta, destDesc, dest );
+    cudaDeviceSynchronize();
 #ifdef DEBUG
     cudnnExitOnError(status, "activation function backward pass error! \n");
 #endif

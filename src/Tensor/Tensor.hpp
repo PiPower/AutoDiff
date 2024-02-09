@@ -33,6 +33,7 @@ public:
     static void addTensors(Tensor* dest, Tensor* left, Tensor* right);
     static void subtractTensors(Tensor* dest, Tensor* left, Tensor* right);
     static void mulTensors(Tensor* dest, Tensor* left, Tensor* right);
+    static void divideTensors(Tensor* dest, Tensor* left, Tensor* right);
     static void reduceTensor(cudnnReduceTensorDescriptor_t reduceDesc, Tensor* dest, Tensor* src);
     static void axisAlignedAccumulation(Tensor* dest, Tensor* src);
     static void matmul(Tensor* dest, Tensor* left, Tensor* right, bool transposeLeft = false, bool transposeRight= false);
@@ -40,7 +41,10 @@ public:
     static void activationForward(cudnnActivationDescriptor_t opDesc, Tensor* dest, Tensor* operand);
     static void activationBackward(cudnnActivationDescriptor_t opDesc, Tensor* dest, Tensor* grad, 
                                                                 Tensor* prevOutput, Tensor* prevInput);
-    //Tensor helpers
+    static void softmaxForward(Tensor* dest, Tensor* operand);
+    static void exp(Tensor* dest, Tensor* operand);
+    static void log(Tensor* dest, Tensor* operand);
+    //Tensor helper
     static Tensor* createWithConstant(float value, TensorShape shape, TensorType dtype = TensorType::float32);
 private:
     TensorShape shape;

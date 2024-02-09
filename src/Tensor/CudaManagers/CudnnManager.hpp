@@ -33,5 +33,7 @@ void activationFunctionForward(cudnnActivationDescriptor_t opDesc, DevicePointer
 void activationFunctionBackward(cudnnActivationDescriptor_t opDesc, DevicePointer *dest, DevicePointer *grad, 
     DevicePointer* prevOutput, DevicePointer* prevInput, cudnnTensorDescriptor_t destDesc, cudnnTensorDescriptor_t  gradDesc,
     cudnnTensorDescriptor_t prevOutputDesc, cudnnTensorDescriptor_t  prevInputDesc);
-
+    
+void softmaxFunctionForward(DevicePointer *dest,  DevicePointer *Operand, 
+                         cudnnTensorDescriptor_t destDesc, cudnnTensorDescriptor_t  OperandDesc);
 #endif

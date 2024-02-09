@@ -193,7 +193,6 @@ void Graph::trainStep(FeedData &dataIn, float step)
     backwardPass();
     applyGradients(eta);
 
-
     cudaFree(eta);
 }
 

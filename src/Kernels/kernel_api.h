@@ -20,9 +20,12 @@ struct TensorDesc
 
 void addTensorsOp(float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);
 void mulTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);
+void divideTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);
 void axisAlignedAccumulationOp( float* dest, float* src, TensorDesc* destDesc, TensorDesc* srcDesc);
 void scaleByConstantOp(float* dest, float* operand, float* scalar, TensorDesc* leftDesc);
 void subtractTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);
+void expOp(float* dest, float* operand, TensorDesc* leftDesc);
+void logOp(float* dest, float* operand, TensorDesc* leftDesc);
 
 #ifdef __cplusplus 
 }

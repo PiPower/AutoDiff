@@ -18,6 +18,7 @@ tensorDeviceMemory(nullptr), dtype(dtype), cudnnDescriptorInitialized(false)
     cudaError err;
     if(rank != 0 )
     {
+        scalarTensor = false;
         unsigned int total_item_count = 1;
         for(auto& dimSize : dim)
         {
@@ -184,6 +185,12 @@ void Tensor::mulTensors(Tensor *dest, Tensor *left, Tensor *right)
         (float*)right->tensorDeviceMemory, left->cudaDescriptorDevice, right->cudaDescriptorDevice);
 }
 
+void Tensor::divideTensors(Tensor *dest, Tensor *left, Tensor *right)
+{
+    divideTensorsOp((float*) dest->tensorDeviceMemory, (float*)left->tensorDeviceMemory, 
+        (float*)right->tensorDeviceMemory, left->cudaDescriptorDevice, right->cudaDescriptorDevice);
+}
+
 void Tensor::reduceTensor(cudnnReduceTensorDescriptor_t reduceDesc, Tensor* dest, Tensor* src)
 {
     float alpha = 1;
@@ -201,7 +208,7 @@ void Tensor::axisAlignedAccumulation(Tensor *dest, Tensor *src)
 /*
     matmul of rank 2 tensors 
     if tensor rank!=2 behaviour is undefined
-    We store tensors in row major format so instead of  A*B we get A^T*B^T
+    We store tensors in row major format so in cublas instead of  A*B we get A^T*B^T
     we wish to find C^T
     from matmul properties for C = A * B we get C^T = B^T * A^T
     ie reverse order of matricies
@@ -248,6 +255,22 @@ void Tensor::activationBackward(cudnnActivationDescriptor_t opDesc, Tensor *dest
     activationFunctionBackward(opDesc, dest->tensorDeviceMemory, grad->tensorDeviceMemory, prevOutput->tensorDeviceMemory,
                                   prevInput->tensorDeviceMemory, dest->cudnnTensorDescriptor,grad->cudnnTensorDescriptor,
                                      prevOutput->cudnnTensorDescriptor, prevInput->cudnnTensorDescriptor);
+}
+
+void Tensor::softmaxForward(Tensor *dest, Tensor *operand)
+{
+    softmaxFunctionForward(dest->tensorDeviceMemory, operand->tensorDeviceMemory, 
+                            dest->cudnnTensorDescriptor, operand->cudnnTensorDescriptor);
+}
+
+void Tensor::exp(Tensor *dest, Tensor *operand)
+{
+    expOp((float*)dest->tensorDeviceMemory,(float*) operand->tensorDeviceMemory, operand->cudaDescriptorDevice);
+}
+
+void Tensor::log(Tensor *dest, Tensor *operand)
+{
+    logOp((float*)dest->tensorDeviceMemory,(float*) operand->tensorDeviceMemory, operand->cudaDescriptorDevice);
 }
 
 void Tensor::tensorReshape(TensorShape newShape)

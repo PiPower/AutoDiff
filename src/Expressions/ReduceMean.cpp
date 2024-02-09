@@ -6,8 +6,9 @@ ReduceMean::ReduceMean(Expression *child_node, std::vector<unsigned int> reduce_
 :
 Expression(), keepDim(keepDim), axis(reduce_axis)
 {
-    logErrorAndExit(child_node == nullptr, "ERROR:  child node of [ReduceMean] cannot be nullptr \n");
+    logErrorAndExit(child_node == nullptr, "Child node of [ReduceMean] cannot be nullptr \n");
     logErrorAndExit(reduce_axis.size() ==0, "Reduction operation needs axis to be able to work");
+
     opDescriptor = createCudnnReduceDescriptor(CUDNN_REDUCE_TENSOR_AVG);
     children.push_back(child_node);
 }
@@ -16,6 +17,11 @@ void ReduceMean::build()
 {
     // all axis to be reduced are set to 1
     reducedShape = children[0]->getTensor()->getShape();
+
+    for(int i=0; i < axis.size(); i++)
+    {
+         logErrorAndExit(axis[i] >=children[0]->getTensor()->getRank(), "Axis larger than tensor dimensions allow in ReduceMean");
+    }
 
     for(int i=0; i < reducedShape.size(); i++)
     {

@@ -6,7 +6,7 @@ ReduceSum::ReduceSum(Expression *child_node, std::vector<unsigned int> reduce_ax
 :
 Expression(), keepDim(keepDim), axis(reduce_axis)
 {
-    logErrorAndExit(child_node == nullptr, "ERROR:  child node of [ReduceSum] cannot be nullptr \n");
+    logErrorAndExit(child_node == nullptr, "Child node of [ReduceSum] cannot be nullptr \n");
     logErrorAndExit(reduce_axis.size() ==0, "Reduction operation needs axis to be able to work");
     opDescriptor = createCudnnReduceDescriptor(CUDNN_REDUCE_TENSOR_ADD);
     children.push_back(child_node);
@@ -16,6 +16,11 @@ void ReduceSum::build()
 {
     // all axis to be reduced are set to 1
     reducedShape = children[0]->getTensor()->getShape();
+
+    for(int i=0; i < axis.size(); i++)
+    {
+         logErrorAndExit(axis[i] >=children[0]->getTensor()->getRank(), "Axis larger than tensor dimensions allow in ReduceSum");
+    }
 
     for(int i=0; i < reducedShape.size(); i++)
     {

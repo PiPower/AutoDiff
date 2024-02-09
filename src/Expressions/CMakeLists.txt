@@ -8,4 +8,5 @@ add_library(Expressions STATIC
     ReduceMean.cpp
     Matmul.cpp
     Activation.cpp
+    Softmax.cpp
 )
