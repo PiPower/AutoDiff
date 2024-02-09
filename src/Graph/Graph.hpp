@@ -6,6 +6,8 @@
 #ifndef GRAPH 
 #define GRAPH
 
+typedef std::map<std::string, Tensor*> FeedData;
+
 class Graph
 {
 public:
@@ -13,10 +15,11 @@ public:
     void compileGraph();
     void build();
     void execute();
-    void call(std::map<std::string, Tensor*>& inputs);
+    void call(FeedData& inputs);
     Tensor* matchGradient(Expression* node, BackwardData& currentGradients);
     void backwardPass();
-    void applyGradients();
+    void trainStep(FeedData& dataIn, float step);
+    void applyGradients(float* eta);
 private:
 Expression* headOfGraph;
 BackwardData gradientRouteData;

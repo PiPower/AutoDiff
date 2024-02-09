@@ -61,7 +61,7 @@ void Graph::compileGraph()
         bool readyForExecution = true;
         for(Expression* child : currentNode->children)
         {
-            if(!(dynamic_cast<Variable*>(child) || child->addedToExecutionList) )
+            if(!(dynamic_cast<Variable*>(child) || dynamic_cast<Input*>(child) || child->addedToExecutionList) )
             {
                 readyForExecution= false;
                 break;
@@ -183,12 +183,27 @@ void Graph::backwardPass()
     //all the remaining gradient belong to Variables/Inputs
 }
 
-void Graph::applyGradients()
+void Graph::trainStep(FeedData &dataIn, float step)
+{
+    float* eta;
+    cudaMalloc(&eta, sizeof(float));
+    cudaMemcpy(eta, &step, sizeof(float), cudaMemcpyHostToDevice);
+
+    call(dataIn);
+    backwardPass();
+    applyGradients(eta);
+
+
+    cudaFree(eta);
+}
+
+void Graph::applyGradients(float* eta)
 {
     for(Variable* var : variableList)
     {
         Tensor* grad = matchGradient(var, gradientRouteData);
         logErrorAndExit(grad == nullptr, "No gradient for variable node\n");
+        Tensor::scaleByConstant(grad, grad, eta);
         var->applyGradients(grad);
         delete grad;
     }

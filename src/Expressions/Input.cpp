@@ -29,7 +29,7 @@ const string* Input::getName()
 
 void Input::setInput(Tensor *t)
 {
-    logErrorAndExit(result->getShape() == t->getShape(), "incorrect shapes for assignment in Input node");
+    logErrorAndExit(result->getShape() != t->getShape(), "incorrect shapes for assignment in Input node");
     result->setTensor_DeviceToDevice(t->getTensorPointer());
 }
 

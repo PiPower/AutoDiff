@@ -103,7 +103,7 @@ __global__ void _kernelScaleByConstant(float* dest, float* operand, float* scala
     unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
     while (threadIndex < upper_memory_bound)
     {
-        dest[threadIndex] = (*scalar) * operand[threadIndex]; 
+        dest[threadIndex] = (*scalar) * (operand[threadIndex]); 
         threadIndex = threadIndex + blockDim.x * gridDim.x;
     }
 }
