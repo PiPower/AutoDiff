@@ -90,7 +90,7 @@ void destroyCudnn()
     }
 }
 
-void* createCudnnDescriptor(TensorType dtype, TensorShape shape)
+cudnnTensorDescriptor_t createCudnnDescriptor(TensorType dtype, TensorShape shape)
 {
     cudnnTensorDescriptor_t desc;
     cudnnStatus_t status = cudnnCreateTensorDescriptor(&desc);
@@ -126,11 +126,6 @@ void destroyCudnnDescriptor(void *descriptor)
 #endif
 }
 
-void createCudnnMatmulDescriptor(TensorType dtype, TensorShape shape)
-{
-    
-}
-
 void addTensors(const void *alpha,
                 const void* OperandDesc,  DevicePointer* OperandDevice,
                 const void *beta,const void* DestinationDesc, DevicePointer *DestinationDevice)
@@ -155,6 +150,16 @@ cudnnReduceTensorDescriptor_t createCudnnReduceDescriptor(cudnnReduceTensorOp_t 
     return desc;
 }
 
+cudnnActivationDescriptor_t createCudnnActivationDescriptor(cudnnActivationMode_t mode, double coef)
+{
+    cudnnActivationDescriptor_t out;
+    cudnnCreateActivationDescriptor(&out);
+    cudnnStatus_t status = cudnnSetActivationDescriptor(out, mode, CUDNN_PROPAGATE_NAN, coef);
+    cudnnExitOnError(status, "Cudnn activation descriptor failed! \n");
+
+    return out;
+}
+
 void reduceTensors(const cudnnReduceTensorDescriptor_t reduceTensorDesc,  
                     const void *alpha, DevicePointer *Operand, const void* OperandDesc,
                     const void *beta, const void* DestinationDesc, DevicePointer *Destination)
@@ -166,6 +171,36 @@ void reduceTensors(const cudnnReduceTensorDescriptor_t reduceTensorDesc,
 
     cudaDeviceSynchronize();
 #ifdef DEBUG
-    cudnnExitOnError(status, "Cudnn could not start logging! \n");
+    cudnnExitOnError(status, "reduce op error! \n");
+#endif
+}
+
+void activationFunctionForward(cudnnActivationDescriptor_t opDesc, DevicePointer *dest, DevicePointer *src, 
+cudnnTensorDescriptor_t destDesc, cudnnTensorDescriptor_t  srcDesc )
+{
+    float alpha = 1;
+    float beta = 0;
+
+    cudnnStatus_t status;
+    status = cudnnActivationForward(*cudnnHandle, opDesc, &alpha, srcDesc, src,&beta, destDesc, dest);
+    cudaDeviceSynchronize();
+#ifdef DEBUG
+    cudnnExitOnError(status, "activation function fordward pass error! \n");
+#endif
+}
+
+void activationFunctionBackward(cudnnActivationDescriptor_t opDesc, DevicePointer *dest, DevicePointer *grad,
+ DevicePointer *prevOutput, DevicePointer *prevInput, cudnnTensorDescriptor_t destDesc, 
+ cudnnTensorDescriptor_t gradDesc, cudnnTensorDescriptor_t prevOutputDesc, cudnnTensorDescriptor_t prevInputDesc)
+{
+    float alpha = 1;
+    float beta = 0;
+
+    cudnnStatus_t status;
+    status = cudnnActivationBackward(*cudnnHandle, opDesc, &alpha, prevOutputDesc, prevOutput, gradDesc,
+                                grad, prevInputDesc, prevInput, &beta, destDesc, dest );
+                                    cudaDeviceSynchronize();
+#ifdef DEBUG
+    cudnnExitOnError(status, "activation function backward pass error! \n");
 #endif
 }

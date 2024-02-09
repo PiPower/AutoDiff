@@ -7,4 +7,5 @@ add_library(Expressions STATIC
     ReduceSum.cpp
     ReduceMean.cpp
     Matmul.cpp
+    Activation.cpp
 )

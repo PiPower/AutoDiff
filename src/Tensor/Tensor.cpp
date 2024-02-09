@@ -113,6 +113,28 @@ char *Tensor::getTensorValues()
     return data;
 }
 
+void Tensor::printTensor(FILE* stream, unsigned int print_max)
+{
+    float* data = (float*) getTensorValues();
+    if(rank == 0)
+    {
+        fprintf(stream, "%f \n",*data );
+        fflush(stream);
+        return;
+    }
+    for(int i= 0; i < getNumberOfElements(); i++)
+    {
+        fprintf(stream, "%f ",data[i] );
+        if((i+1) %shape[rank-1] == 0 )
+            fprintf(stream, "\n -------------------------------------------- \n");
+        if(print_max > 0 && i < print_max)
+            break;
+    }
+    fflush(stream);
+    delete[] data;
+
+}
+
 void Tensor::buildDescriptors()
 {   
     if(cudnnDescriptorInitialized)
@@ -213,6 +235,19 @@ void Tensor::scaleByConstant(Tensor *dest, Tensor *operand, DevicePointer *scala
     logErrorAndExit(dest->getShape() != operand->getShape(), 
          "Not matching dimensions of dest and operand for scale by constant \n");
     scaleByConstantOp((float*)dest->tensorDeviceMemory, (float*)operand->tensorDeviceMemory,  (float*)scalar, operand->cudaDescriptorDevice);
+}
+
+void Tensor::activationForward(cudnnActivationDescriptor_t opDesc, Tensor *dest, Tensor *operand)
+{
+    activationFunctionForward(opDesc, dest->tensorDeviceMemory, operand->tensorDeviceMemory, 
+    dest->cudnnTensorDescriptor, operand->cudnnTensorDescriptor);
+}
+
+void Tensor::activationBackward(cudnnActivationDescriptor_t opDesc, Tensor *dest, Tensor *grad, Tensor *prevOutput, Tensor *prevInput)
+{
+    activationFunctionBackward(opDesc, dest->tensorDeviceMemory, grad->tensorDeviceMemory, prevOutput->tensorDeviceMemory,
+                                  prevInput->tensorDeviceMemory, dest->cudnnTensorDescriptor,grad->cudnnTensorDescriptor,
+                                     prevOutput->cudnnTensorDescriptor, prevInput->cudnnTensorDescriptor);
 }
 
 void Tensor::tensorReshape(TensorShape newShape)

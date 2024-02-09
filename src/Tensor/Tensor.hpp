@@ -3,6 +3,7 @@
 #include "CudaManagers/CublasManager.hpp"
 #include "CudaManagers/CudnnManager.hpp"
 #include "TensorTypes.hpp"
+#include <cstdio>
 #ifndef TENSOR 
 #define TENSOR
 
@@ -19,6 +20,7 @@ public:
     void setTensor_HostToDevice(void* data);
     void setTensor_DeviceToDevice(DevicePointer* data);
     char* getTensorValues();
+    void printTensor(FILE* stream, unsigned int print_max = 0);
     unsigned int getNumberOfElements();
     unsigned int getRank();
     TensorShape getShape();
@@ -35,6 +37,9 @@ public:
     static void axisAlignedAccumulation(Tensor* dest, Tensor* src);
     static void matmul(Tensor* dest, Tensor* left, Tensor* right, bool transposeLeft = false, bool transposeRight= false);
     static void scaleByConstant(Tensor* dest, Tensor* operand, DevicePointer* scalar);
+    static void activationForward(cudnnActivationDescriptor_t opDesc, Tensor* dest, Tensor* operand);
+    static void activationBackward(cudnnActivationDescriptor_t opDesc, Tensor* dest, Tensor* grad, 
+                                                                Tensor* prevOutput, Tensor* prevInput);
     //Tensor helpers
     static Tensor* createWithConstant(float value, TensorShape shape, TensorType dtype = TensorType::float32);
 private:
@@ -43,7 +48,7 @@ private:
     DevicePointer* tensorDeviceMemory;
     unsigned int rank;
     bool scalarTensor;
-    DevicePointer* cudnnTensorDescriptor;
+    cudnnTensorDescriptor_t cudnnTensorDescriptor;
     TensorDesc *cudaDescriptorDevice;
     bool cudnnDescriptorInitialized; 
 };
