@@ -68,3 +68,32 @@ void ConstantInitializer::setTensorType(TensorType dtype)
 ConstantInitializer::~ConstantInitializer()
 {
 }
+
+GlorotUniform::GlorotUniform(float fant_in, float fan_out, TensorType dtype)
+:
+Initializer(), fan_in(fan_in), fan_out(fan_out)
+{
+}
+
+char *GlorotUniform::generate(unsigned int count)
+{
+    if(dtype == TensorType::float32)
+    {
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        float limit = sqrt(6.0f/(fan_in + fan_out));
+        std::uniform_real_distribution<float> glorot(-limit, limit);
+        float* dataBuffer =  new float[count];
+        for(int i =0; i < count; i++)
+        {
+            dataBuffer[i] = glorot(rng);
+        }
+        return (char*)dataBuffer;
+    }
+    return nullptr;
+}
+
+void GlorotUniform::setTensorType(TensorType dtype)
+{
+    this->dtype = dtype;
+}

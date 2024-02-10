@@ -19,6 +19,7 @@ public:
     DevicePointer* getCudaDescriptorPointer();
     void setTensor_HostToDevice(void* data);
     void setTensor_DeviceToDevice(DevicePointer* data);
+    void setTensor_DeviceToDevice(DevicePointer* data, unsigned int byteSize, unsigned int offset = 0);
     char* getTensorValues();
     void printTensor(FILE* stream, unsigned int print_max = 0);
     unsigned int getNumberOfElements();

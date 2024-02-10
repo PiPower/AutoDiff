@@ -38,4 +38,17 @@ private:
     TensorType dtype;
     float constant;
 };
+
+class GlorotUniform : public Initializer
+{
+public:
+    GlorotUniform(float fant_in, float fan_out, TensorType dtype);
+    char* generate(unsigned int count);
+    void setTensorType(TensorType dtype);
+    ~GlorotUniform();
+private:
+    TensorType dtype;
+    float fan_in;
+    float fan_out;
+};
 #endif
