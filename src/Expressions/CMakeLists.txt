@@ -9,4 +9,5 @@ add_library(Expressions STATIC
     Matmul.cpp
     Activation.cpp
     Softmax.cpp
+    CategoricalCrossentropy.cpp
 )

@@ -143,6 +143,29 @@ __global__ void _kernelLog(float* dest, float* operand, TensorDesc* leftDesc)
     }
 }
 
+// y*log(p) op fusion for crossentropy, all tensors must have the same dimensions
+__global__ void _kernelCCfusionForward(float* dest, float* predictions, float* labels, TensorDesc* desc)
+{
+    unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int upper_memory_bound = desc->dim[0] * desc->dimStrides[0];
+    while (threadIndex < upper_memory_bound)
+    {
+        dest[threadIndex] = -1.0f * labels[threadIndex] * log(predictions[threadIndex]); 
+        threadIndex = threadIndex + blockDim.x * gridDim.x;
+    }
+}
+
+__global__ void _kernelCCfusionBackward(float* dest, float* predictions, float* labels, TensorDesc* desc)
+{
+    unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int upper_memory_bound = desc->dim[0] * desc->dimStrides[0];
+    while (threadIndex < upper_memory_bound)
+    {
+        dest[threadIndex] = (-1.0f / predictions[threadIndex]) * labels[threadIndex] ; 
+        threadIndex = threadIndex + blockDim.x * gridDim.x;
+    }
+}
+
 extern "C" void addTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
     _kernelAddTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
@@ -187,5 +210,17 @@ extern "C" void expOp(float* dest, float* operand, TensorDesc* leftDesc)
 extern "C" void logOp(float* dest, float* operand, TensorDesc* leftDesc)
 {
     _kernelLog<<<16,16>>>(dest, operand, leftDesc);
+    cudaDeviceSynchronize();
+}
+
+extern "C" void CCfusionOpForwardOp(float* dest, float* predictions, float* labels, TensorDesc* desc)
+{
+    _kernelCCfusionForward<<<16,16>>>(dest, predictions, labels, desc);
+    cudaDeviceSynchronize();
+}
+
+extern "C" void CCfusionOpBackwardOp(float* dest, float* predictions, float* labels, TensorDesc* desc)
+{
+    _kernelCCfusionBackward<<<16,16>>>(dest, predictions, labels, desc);
     cudaDeviceSynchronize();
 }

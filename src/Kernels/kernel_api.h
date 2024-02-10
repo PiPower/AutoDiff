@@ -26,6 +26,8 @@ void scaleByConstantOp(float* dest, float* operand, float* scalar, TensorDesc* l
 void subtractTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);
 void expOp(float* dest, float* operand, TensorDesc* leftDesc);
 void logOp(float* dest, float* operand, TensorDesc* leftDesc);
+void CCfusionOpForwardOp(float* dest, float* predictions, float* labels, TensorDesc* desc);
+void CCfusionOpBackwardOp(float* dest, float* predictions, float* labels, TensorDesc* desc);
 
 #ifdef __cplusplus 
 }

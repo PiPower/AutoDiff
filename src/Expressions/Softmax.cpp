@@ -40,13 +40,12 @@ void Softmax::backwardPass(Tensor *propagatedGradient, BackwardData &storedGradi
     // softmax grad for y_j = s_j(x_1, ..., x_n) is as follows
     // dL/dx_j = y_j * (dL/dy_j - sum_red( dL/dy * y)
     Tensor::mulTensors(grad_out_prod, propagatedGradient, result);
-
     Tensor *grad = new Tensor( children[0]->getTensor()->getShape(),  children[0]->getTensor()->getType());
 
     Tensor::reduceTensor(opDescriptor, intermidiate, grad_out_prod);
     Tensor::subtractTensors(grad_out_prod, propagatedGradient, intermidiate);
     Tensor::mulTensors(grad,grad_out_prod, result);
-
+    
     storedGradients.gradientTensors.push_back(grad);
     storedGradients.nodeAddres.push_back(children[0]);
 }

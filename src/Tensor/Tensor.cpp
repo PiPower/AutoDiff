@@ -119,13 +119,13 @@ void Tensor::printTensor(FILE* stream, unsigned int print_max)
     float* data = (float*) getTensorValues();
     if(rank == 0)
     {
-        fprintf(stream, "%f \n",*data );
+        fprintf(stream, "%.4f \n",*data );
         fflush(stream);
         return;
     }
     for(int i= 0; i < getNumberOfElements(); i++)
     {
-        fprintf(stream, "%f ",data[i] );
+        fprintf(stream, "%.4f ",data[i] );
         if((i+1) %shape[rank-1] == 0 )
             fprintf(stream, "\n -------------------------------------------- \n");
         if(print_max > 0 && i < print_max)
@@ -271,6 +271,18 @@ void Tensor::exp(Tensor *dest, Tensor *operand)
 void Tensor::log(Tensor *dest, Tensor *operand)
 {
     logOp((float*)dest->tensorDeviceMemory,(float*) operand->tensorDeviceMemory, operand->cudaDescriptorDevice);
+}
+
+void Tensor::CCfusionOpForward(Tensor *dest, Tensor *predictions, Tensor *labels)
+{
+    CCfusionOpForwardOp((float*)dest->tensorDeviceMemory, (float*)predictions->tensorDeviceMemory, 
+                            (float*)labels->tensorDeviceMemory, predictions->cudaDescriptorDevice);
+}
+
+void Tensor::CCfusionOpBackward(Tensor *dest, Tensor *predictions, Tensor *labels)
+{
+     CCfusionOpBackwardOp((float*)dest->tensorDeviceMemory, (float*)predictions->tensorDeviceMemory, 
+                            (float*)labels->tensorDeviceMemory, predictions->cudaDescriptorDevice);
 }
 
 void Tensor::tensorReshape(TensorShape newShape)

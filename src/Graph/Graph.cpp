@@ -170,7 +170,7 @@ void Graph::backwardPass()
 {
     Tensor* grad = Tensor::createWithConstant(1.0f, {});
     for(int i=executionList.size()-1; i >=0; i--)
-    {
+    {   
         executionList[i]->backwardPass(grad, gradientRouteData);
         delete grad;
         if(i > 0)
@@ -183,13 +183,14 @@ void Graph::backwardPass()
     //all the remaining gradient belong to Variables/Inputs
 }
 
-void Graph::trainStep(FeedData &dataIn, float step)
+void Graph::trainStep(FeedData &dataIn, float step, bool printLoss)
 {
     float* eta;
     cudaMalloc(&eta, sizeof(float));
     cudaMemcpy(eta, &step, sizeof(float), cudaMemcpyHostToDevice);
 
     call(dataIn);
+    if(printLoss) executionList[executionList.size()-1]->getTensor()->printTensor(stdout);
     backwardPass();
     applyGradients(eta);
 
@@ -206,4 +207,13 @@ void Graph::applyGradients(float* eta)
         var->applyGradients(grad);
         delete grad;
     }
+
+    //clear additional gradients for input nodes
+    for(int i=0 ; i < gradientRouteData.gradientTensors.size(); i ++)
+    {
+        delete  gradientRouteData.gradientTensors[i];
+    }
+
+    gradientRouteData.gradientTensors.clear();
+    gradientRouteData.nodeAddres.clear();
 }

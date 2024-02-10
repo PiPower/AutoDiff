@@ -18,7 +18,7 @@ public:
     void call(FeedData& inputs);
     Tensor* matchGradient(Expression* node, BackwardData& currentGradients);
     void backwardPass();
-    void trainStep(FeedData& dataIn, float step);
+    void trainStep(FeedData& dataIn, float step, bool printLoss);
     void applyGradients(float* eta);
 private:
 Expression* headOfGraph;

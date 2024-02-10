@@ -44,6 +44,8 @@ public:
     static void softmaxForward(Tensor* dest, Tensor* operand);
     static void exp(Tensor* dest, Tensor* operand);
     static void log(Tensor* dest, Tensor* operand);
+    static void CCfusionOpForward(Tensor* dest, Tensor* predictions, Tensor* labels);
+    static void CCfusionOpBackward(Tensor* dest, Tensor* predictions, Tensor* labels);
     //Tensor helper
     static Tensor* createWithConstant(float value, TensorShape shape, TensorType dtype = TensorType::float32);
 private:
