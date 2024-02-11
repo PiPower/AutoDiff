@@ -14,7 +14,8 @@ using namespace std;
 
 MnistDataset::MnistDataset(const char* trainPath, const char* testPath)
 :
-batches(nullptr)
+trainBatchesLabes(nullptr), trainBatchesImg(nullptr), 
+testBatchesLabes(nullptr), testBatchesImg(nullptr)
 {
     float* training_dataset_buffer = new float[28*28*60000];
     float* training_dataset_labels = new float[60000 * 10];
@@ -148,26 +149,50 @@ void MnistDataset::print_image(float* values, float* labels)
 void MnistDataset::buildBatches(unsigned int batch_size)
 {
     batchSize = batch_size;
-    batchCount = TRAIN_DATA_SIZE/batchSize;
+    trainBatchCount = TRAIN_DATA_SIZE/batchSize;
+    testBatchCount = TEST_DATA_SIZE/batchSize;
+
     for(int i=0; i < TRAIN_DATA_SIZE; i++)
     {
         trainBatchAssignment.push_back(i);
         if(i < TEST_DATA_SIZE)
             testBatchAssignment.push_back(i);
     }
+    trainBatchesImg = new Tensor*[trainBatchCount];
+    trainBatchesLabes = new Tensor*[trainBatchCount];
 
-    batches = new Tensor*[batchCount];
-    for(int i =0; i < batchCount; i++)
+    for(int i =0; i < trainBatchCount; i++)
     {
-        batches[i] = new Tensor({batch_size, WIDTH * HEIGHT});
+        trainBatchesImg[i] = new Tensor({batch_size, WIDTH * HEIGHT});
+        trainBatchesLabes[i] = new Tensor({batch_size, 10});
     }
 
+    testBatchesImg = new Tensor*[testBatchCount];
+    testBatchesLabes = new Tensor*[testBatchCount];
 
+    for(int i =0; i < testBatchCount; i++)
+    {
+        testBatchesImg[i] = new Tensor({batch_size, WIDTH * HEIGHT});
+        testBatchesLabes[i] = new Tensor({batch_size, 10});
+    }
+    setTrainBatches();
+    setTestBatches();
 }
 
-std::vector<Tensor *> MnistDataset::getBatch(unsigned int i)
+std::vector<Tensor*> MnistDataset::getTrainBatch(unsigned int i)
 {
-    return std::vector<Tensor *>();
+    return { trainBatchesImg[i], trainBatchesLabes[i]};
+}
+
+std::vector<Tensor*> MnistDataset::getTestBatch(unsigned int i)
+{
+    return { testBatchesImg[i], testBatchesLabes[i]};
+}
+
+
+void MnistDataset::shuffle()
+{
+    
 }
 
 void MnistDataset::loadDataset(float *images_dataset, float *labels_dataset, char *fileData, int maxSize)
@@ -198,6 +223,10 @@ void MnistDataset::loadDataset(float *images_dataset, float *labels_dataset, cha
             i++;
             int number = parseNumber(fileData, i);
             float pixel = ((float)number)/255.0f;
+            if(pixel > 0 )
+            {
+                int x  = 2;
+            }
             arr[number_count] = pixel;
             number_count++;
         }
@@ -205,5 +234,37 @@ void MnistDataset::loadDataset(float *images_dataset, float *labels_dataset, cha
         memcpy(&labels_dataset[image_offset*10], labels, 10 * sizeof(float));
         image_offset++;
         i++;
+    }
+}
+
+void MnistDataset::setTestBatches()
+{
+    for(int batch = 0; batch < testBatchCount;  batch++)
+    {
+        for(int sample = 0; sample < batchSize;  sample++)
+        {
+            unsigned int sampleIndex = testBatchAssignment[batch *batchSize + sample];
+
+            testBatchesImg[batch]->setTensor_DeviceToDevice(testDataDevice + sampleIndex * WIDTH * HEIGHT * sizeof(float), 
+                                                        WIDTH * HEIGHT* sizeof(float), sample * WIDTH * HEIGHT * sizeof(float));
+            testBatchesLabes[batch]->setTensor_DeviceToDevice( testLabesDevice + sampleIndex * 10 * sizeof(float), 
+                                                                                10* sizeof(float), sample * 10* sizeof(float));
+        }
+    }
+}
+
+void MnistDataset::setTrainBatches()
+{
+    for(int batch = 0; batch < trainBatchCount;  batch++)
+    {
+        for(int sample = 0; sample < batchSize;  sample++)
+        {
+            unsigned int sampleIndex = trainBatchAssignment[batch *batchSize + sample];
+
+            trainBatchesImg[batch]->setTensor_DeviceToDevice(trainDataDevice + sampleIndex * WIDTH * HEIGHT * sizeof(float), 
+                                                        WIDTH * HEIGHT* sizeof(float), sample * WIDTH * HEIGHT * sizeof(float));
+            trainBatchesLabes[batch]->setTensor_DeviceToDevice( trainLabesDevice + sampleIndex * 10 * sizeof(float), 
+                                                                                10* sizeof(float), sample * 10* sizeof(float));
+        }
     }
 }

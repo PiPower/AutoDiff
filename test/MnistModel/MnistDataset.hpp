@@ -7,28 +7,42 @@
     https://www.kaggle.com/datasets/oddrationale/mnist-in-csv?select=mnist_test.csv
     char data is trasformed into float scaled to [0,1] and label into one hot vectors
 */
+
+
 class MnistDataset
 {
 public:
     MnistDataset(const char* trainPath, const char* testPath);
     void print_image(float* values, float* labels);
     void buildBatches(unsigned int batch_size);
-    unsigned int getBatchCount() {return batchCount;};
-    std::vector<Tensor*> getBatch(unsigned int i);
+    unsigned int getTrainBatchCount() {return trainBatchCount;};
+    unsigned int getTestBatchCount() {return testBatchCount;};
+    unsigned int getBatchSize() {return batchSize;};
+    std::vector<Tensor*> getTrainBatch(unsigned int i);
+    std::vector<Tensor*> getTestBatch(unsigned int i);
+    void shuffle();
 private:
     int parseNumber(char* dataset, int& startPos);
     void loadDataset(float* images, float* labels, char* fileData, int maxSize);
+    void setTrainBatches();
+    void setTestBatches();
 private:
-    float* trainDataDevice;
-    float* trainLabesDevice;
+    char* trainDataDevice;
+    char* trainLabesDevice;
 
-    float* testDataDevice;
-    float* testLabesDevice;
+    char* testDataDevice;
+    char* testLabesDevice;
 
     unsigned int batchSize;
-    unsigned int batchCount;
-    Tensor** batches;
+
+    unsigned int trainBatchCount;
+    Tensor** trainBatchesImg;
+    Tensor** trainBatchesLabes;
     std::vector<unsigned int> trainBatchAssignment;
+
+    unsigned int testBatchCount;
+    Tensor** testBatchesImg;
+    Tensor** testBatchesLabes;
     std::vector<unsigned int> testBatchAssignment;
 };
 
