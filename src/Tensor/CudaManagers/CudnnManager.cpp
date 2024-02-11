@@ -109,7 +109,8 @@ cudnnTensorDescriptor_t createCudnnDescriptor(TensorType dtype, TensorShape shap
         stride = stride * dim[i];
     } 
 
-    status = cudnnSetTensorNdDescriptor(desc, getDataType(dtype), dimCount, dim, dimStride);
+    //status = cudnnSetTensorNdDescriptor(desc, getDataType(dtype), dimCount, dim, dimStride);
+    status = cudnnSetTensorNdDescriptorEx(desc, CUDNN_TENSOR_NHWC ,getDataType(dtype), dimCount, dim);
     cudnnExitOnError(status, "Cudnn tensor descriptor set failed! \n");
     delete[] dim;
     delete[] dimStride;

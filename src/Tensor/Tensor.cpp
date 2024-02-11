@@ -57,6 +57,11 @@ void Tensor::setTensor_HostToDevice(void* data)
     logErrorAndExit(err != cudaSuccess, "Incorrent memory device to device copy");
 }
 
+void Tensor::setTensor_DeviceToDevice(Tensor *data)
+{
+    setTensor_DeviceToDevice(data->tensorDeviceMemory);
+}
+
 void* Tensor::getTensorPointer()
 {
     return tensorDeviceMemory;
