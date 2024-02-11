@@ -68,7 +68,7 @@ void initCudnn()
     cudnnHandle = (cudnnHandle_t*)malloc(sizeof(cudnnHandle_t));
     cudnnStatus_t status = cudnnCreate(cudnnHandle);
     cudnnExitOnError(status, "Cudnn initialization failed! \n");
-#ifdef DEBUG
+#ifdef LOG_CUDNN
 //for logging to work CUDNN_LOGDEST_DBG MUST be set to desired output: stdout or stderr or file
     status = cudnnSetCallback(0x0F, NULL, NULL );
     cudnnExitOnError(status, "Cudnn could not start logging! \n");

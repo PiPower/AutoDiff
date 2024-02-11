@@ -14,7 +14,7 @@ class Tensor
 {
 public:
     Tensor(TensorShape dim = {}, TensorType dtype = TensorType::float32);
-    Tensor(Tensor& src) = delete;
+    Tensor(Tensor& src);
     DevicePointer* getTensorPointer();
     DevicePointer* getCudaDescriptorPointer();
     void setTensor_HostToDevice(void* data);

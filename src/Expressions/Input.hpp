@@ -11,15 +11,17 @@ class Input : public Expression
 {
 public:
     Input() = delete;
-    Input(TensorShape shape, std::string name, TensorType dtype = TensorType::float32);
+    Input(TensorShape shape, std::string name, bool label = false, TensorType dtype = TensorType::float32);
     void build();
     void execute();
     const std::string* getName();
     void setInput(Tensor* t);
+    bool isLabel(){return label;}
     void backwardPass(Tensor* propagatedGradient, BackwardData& storedGradients);
 private:
     std::string name;
     Tensor* holder;
+    bool label;
 };
 
 #endif

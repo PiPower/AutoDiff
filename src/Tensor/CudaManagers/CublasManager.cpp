@@ -24,7 +24,7 @@ void initCublas()
     cublasStatus_t status = cublasCreate(cublasHandle);
     cublasExitOnError(status, "Cublas initialization failed! \n");
     
-#ifdef DEBUG
+#ifdef LOG_CUBLAS
     fclose(fopen("./cublasLogs.txt", "w"));
     status = cublasLoggerConfigure(true, 0,0,"./cublasLogs.txt" );
     cublasExitOnError(status, "Cublas could not start logging! \n");

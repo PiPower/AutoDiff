@@ -2,9 +2,9 @@
 
 using namespace std;
 
-Input::Input(TensorShape shape, string name,TensorType dtype)
+Input::Input(TensorShape shape, string name, bool label, TensorType dtype)
 :
-Expression(), name(name)
+Expression(), name(name), label(label)
 {
     for(int i =0;  i < shape.size(); i++ )
     {

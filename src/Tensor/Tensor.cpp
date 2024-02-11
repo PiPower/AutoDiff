@@ -41,6 +41,13 @@ tensorDeviceMemory(nullptr), dtype(dtype), cudnnDescriptorInitialized(false)
     buildDescriptors();
 }
 
+Tensor::Tensor(Tensor& src)
+:
+Tensor(src.shape, src.dtype)
+{
+    setTensor_DeviceToDevice(src.tensorDeviceMemory);
+}
+
 void Tensor::setTensor_HostToDevice(void* data)
 {
     logErrorAndExit(tensorDeviceMemory == nullptr, "Copy dest is unallocated  tensor!\n");
@@ -130,7 +137,7 @@ void Tensor::printTensor(FILE* stream, unsigned int print_max)
     {
         fprintf(stream, "%.5f ",data[i] );
         if((i+1) %shape[rank-1] == 0 )
-            fprintf(stream, "\n -------------------------------------------- \n");
+            fprintf(stream, "\n");
         if(print_max > 0 && i >= print_max)
             break;
     }

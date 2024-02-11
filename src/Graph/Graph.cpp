@@ -4,13 +4,11 @@
 #include <iostream>
 using namespace std;
 
-Graph::Graph(Expression *graph)
+Graph::Graph(Expression *graph, std::vector<Expression*> outputNodes)
 :
-headOfGraph(graph)
+headOfGraph(graph), outputNodes(outputNodes),lastInferenceNode(-1)
 {
 }
-
-
 /*
 Compilation algorithm first searches for all input/variable node because they are always first
 to exectute, but they should be executed only once during initialization period
@@ -82,6 +80,27 @@ void Graph::compileGraph()
             index = 0;
         }
     }
+
+    // check if all output nodes belong to execution list
+    for(Expression* outputNode : outputNodes)
+    {
+       auto iter = find(executionList.begin(), executionList.end(), outputNode);
+       if(iter == executionList.end())
+       {
+            logErrorAndExit(true, "node in output nodes does not belong to the Graph");
+       }
+    }
+
+
+    // find the last node to execture in inference call
+    for(int i = executionList.size() - 1; i >=0; i-- )
+    {
+       auto iter = find(outputNodes.begin(), outputNodes.end(), executionList[i]);
+       if(iter != outputNodes.end())
+       {
+            lastInferenceNode = i;
+       }
+    }
     
 }
 
@@ -106,15 +125,7 @@ void Graph::build()
     }
 }
 
-void Graph::execute()
-{
-    for(Expression* node : executionList)
-    {
-        node->execute();
-    }
-}
-
-void Graph::call(std::map<std::string, Tensor*>& inputs)
+void Graph::trainCall(std::map<std::string, Tensor*>& inputs)
 {
     for(Input* input : inputList)
     {
@@ -129,7 +140,10 @@ void Graph::call(std::map<std::string, Tensor*>& inputs)
         input->setInput(in);
     }
     
-    execute();
+    for(Expression* node : executionList)
+    {
+        node->execute();
+    }
 }
 
 Tensor *Graph::matchGradient(Expression *node, BackwardData &currentGradients)
@@ -189,7 +203,7 @@ void Graph::trainStep(FeedData &dataIn, float step, bool printLoss)
     cudaMalloc(&eta, sizeof(float));
     cudaMemcpy(eta, &step, sizeof(float), cudaMemcpyHostToDevice);
 
-    call(dataIn);
+    trainCall(dataIn);
     if(printLoss) executionList[executionList.size()-1]->getTensor()->printTensor(stdout);
     backwardPass();
     applyGradients(eta);
@@ -215,4 +229,40 @@ void Graph::applyGradients(float* eta)
 
     gradientRouteData.gradientTensors.clear();
     gradientRouteData.nodeAddres.clear();
+}
+
+std::vector<Tensor *> Graph::inferenceCall(FeedData& dataIn)
+{
+    std::vector<Tensor*> output;
+
+    for(Input* input : inputList)
+    {   
+
+        if(input->isLabel())
+        {
+            continue;
+        }
+        const string* name = input->getName();
+        auto iterator = dataIn.find(*name);
+        if(iterator == dataIn.cend())
+        {
+            cerr<<"Given input does not contrain tensor for input node: " << *name << endl;
+            exit(-1);
+        }
+        Tensor* in = iterator->second;
+        input->setInput(in);
+    }
+
+    for(int i =0; i <= lastInferenceNode; i++ )
+    {
+        executionList[i]->execute();
+    }
+
+    for(Expression* outputNode : outputNodes)
+    {
+        Tensor *t = new Tensor(*outputNode->getTensor()) ;
+        output.push_back(t);
+    }
+
+    return output;
 }
