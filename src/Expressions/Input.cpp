@@ -11,6 +11,7 @@ Expression(), name(name)
           logErrorAndExit(shape[i] == 0, "Tensor cannot bet 0 along any dimension");
     }
     result = new Tensor(shape, dtype);
+    holder = result;
 }
 
 void Input::build()
@@ -29,8 +30,9 @@ const string* Input::getName()
 
 void Input::setInput(Tensor *t)
 {
-    logErrorAndExit(result->getShape() != t->getShape(), "incorrect shapes for assignment in Input node");
-    result->setTensor_DeviceToDevice(t->getTensorPointer());
+    logErrorAndExit(holder->getShape() != t->getShape(), "incorrect shapes for assignment in Input node");
+    logErrorAndExit(holder->getType() != t->getType(), "incorrect data type for assignment in Input node");
+    result = t;
 }
 
 void Input::backwardPass(Tensor* propagatedGradient, BackwardData& storedGradients)

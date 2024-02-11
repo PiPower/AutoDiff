@@ -42,7 +42,7 @@ private:
 class GlorotUniform : public Initializer
 {
 public:
-    GlorotUniform(float fant_in, float fan_out, TensorType dtype);
+    GlorotUniform(float fan_in, float fan_out, TensorType dtype);
     char* generate(unsigned int count);
     void setTensorType(TensorType dtype);
     ~GlorotUniform();
@@ -50,5 +50,17 @@ private:
     TensorType dtype;
     float fan_in;
     float fan_out;
+};
+
+
+class InMemory : public Initializer
+{
+public:
+    InMemory(float* data);
+    char* generate(unsigned int count);
+    void setTensorType(TensorType dtype);
+    ~InMemory();
+private:
+   float* data;
 };
 #endif

@@ -69,9 +69,9 @@ ConstantInitializer::~ConstantInitializer()
 {
 }
 
-GlorotUniform::GlorotUniform(float fant_in, float fan_out, TensorType dtype)
+GlorotUniform::GlorotUniform(float fan_in, float fan_out, TensorType dtype)
 :
-Initializer(), fan_in(fan_in), fan_out(fan_out)
+Initializer(), fan_in(fan_in), fan_out(fan_out), dtype(dtype)
 {
 }
 
@@ -96,4 +96,26 @@ char *GlorotUniform::generate(unsigned int count)
 void GlorotUniform::setTensorType(TensorType dtype)
 {
     this->dtype = dtype;
+}
+
+GlorotUniform::~GlorotUniform()
+{
+}
+
+InMemory::InMemory(float *data)
+:data(data)
+{
+}
+
+char *InMemory::generate(unsigned int count)
+{
+    return (char*)data;
+}
+
+void InMemory::setTensorType(TensorType dtype)
+{
+}
+
+InMemory::~InMemory()
+{
 }

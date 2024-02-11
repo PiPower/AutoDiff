@@ -19,6 +19,7 @@ public:
     void backwardPass(Tensor* propagatedGradient, BackwardData& storedGradients);
 private:
     std::string name;
+    Tensor* holder;
 };
 
 #endif

@@ -122,18 +122,19 @@ void Tensor::printTensor(FILE* stream, unsigned int print_max)
     float* data = (float*) getTensorValues();
     if(rank == 0)
     {
-        fprintf(stream, "%.4f \n",*data );
+        fprintf(stream, "%.5f \n\n",*data );
         fflush(stream);
         return;
     }
     for(int i= 0; i < getNumberOfElements(); i++)
     {
-        fprintf(stream, "%.4f ",data[i] );
+        fprintf(stream, "%.5f ",data[i] );
         if((i+1) %shape[rank-1] == 0 )
             fprintf(stream, "\n -------------------------------------------- \n");
-        if(print_max > 0 && i < print_max)
+        if(print_max > 0 && i >= print_max)
             break;
     }
+    fprintf(stream, "\n");
     fflush(stream);
     delete[] data;
 
@@ -213,31 +214,29 @@ void Tensor::axisAlignedAccumulation(Tensor *dest, Tensor *src)
     if tensor rank!=2 behaviour is undefined
     We store tensors in row major format so in cublas instead of  A*B we get A^T*B^T
     we wish to find C^T
-    from matmul properties for C = A * B we get C^T = B^T * A^T
+    from matmul properties for C = A * B we get C^T = B^T * A^T = A' *B' 
     ie reverse order of matricies
 */
 void Tensor::matmul(Tensor *dest, Tensor *left, Tensor *right, bool transposeLeft, bool transposeRight)
 {
     // negate because cublas expect column major
-    Tensor* a = right;
-    Tensor* b = left;
+    std::swap(left, right);
     std::swap(transposeLeft, transposeRight);
 
-    int a_rows = a->shape[1];
-    int a_columns = a->shape[0];
+    int a_rows = left->shape[1];
+    int a_columns = left->shape[0];
     if(transposeLeft) std::swap(a_rows, a_columns);
 
-    int b_rows = b->shape[1];
-    int b_columns = b->shape[0];
+    int b_rows = right->shape[1];
+    int b_columns = right->shape[0];
     if(transposeRight) std::swap(b_rows, b_columns);
 
     float alpha = 1.0f;
     float beta = 0.0f;
 
-    cublasMatmul(transposeLeft, transposeRight, a_rows, b_columns, a_columns, &alpha, 
-    (float*)a->tensorDeviceMemory,transposeLeft ? a_columns : a_rows, (float*)b->tensorDeviceMemory, 
-    transposeRight? b_columns :b_rows, &beta, 
-    (float*)dest->tensorDeviceMemory, a_rows );
+    cublasMatmul(transposeLeft, transposeRight, a_rows, b_columns, a_columns, &alpha, (float*)left->tensorDeviceMemory,
+    transposeLeft ? a_columns :a_rows, (float*)right->tensorDeviceMemory, transposeRight ? b_columns : a_columns,
+    &beta, (float*)dest->tensorDeviceMemory, a_rows);
 }
 
 void Tensor::scaleByConstant(Tensor *dest, Tensor *operand, DevicePointer *scalar)

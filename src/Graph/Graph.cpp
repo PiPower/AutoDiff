@@ -207,7 +207,6 @@ void Graph::applyGradients(float* eta)
         var->applyGradients(grad);
         delete grad;
     }
-
     //clear additional gradients for input nodes
     for(int i=0 ; i < gradientRouteData.gradientTensors.size(); i ++)
     {
