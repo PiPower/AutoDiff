@@ -14,7 +14,7 @@ extern "C"{
 struct TensorDesc
 {
     unsigned char ndim;
-    unsigned char dim[5];
+    unsigned int dim[5];
     unsigned int dimStrides[5];
 };
 
