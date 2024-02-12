@@ -23,7 +23,7 @@ void Matmul::build()
     if(tr_left) swap(leftShape[0], leftShape[1]);
     if(tr_right) swap(rightShape[0], rightShape[1]);
 
-    logErrorAndExit(leftShape.size() != rightShape.size(), "right child of matmul has too incorrect rank");
+    logErrorAndExit(leftShape.size() != rightShape.size(), "right child of matmul has incorrect rank");
     logErrorAndExit(leftShape[1] != rightShape[0], "incorrent left column/right row count");
     resultShape.push_back(leftShape[0] );
     resultShape.push_back(rightShape[1] );

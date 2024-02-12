@@ -299,6 +299,14 @@ void Tensor::CCfusionOpBackward(Tensor *dest, Tensor *predictions, Tensor *label
                             (float*)labels->tensorDeviceMemory, predictions->cudaDescriptorDevice);
 }
 
+void Tensor::Convolution2DForward(Tensor* dest,Tensor* kernel, Tensor* input, cudnnFilterDescriptor_t kernelDesc,
+            cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo,void* workSpace, size_t workspaceSize )
+{
+
+    cudnnConvolution2DForward(input->cudnnTensorDescriptor, input->tensorDeviceMemory, kernelDesc, 
+    kernel->tensorDeviceMemory, convDesc, algo,workSpace, workspaceSize,dest->cudnnTensorDescriptor, dest->tensorDeviceMemory);
+}
+
 void Tensor::tensorReshape(TensorShape newShape)
 {
     unsigned int newNumberOfElements = 1;
@@ -329,4 +337,34 @@ Tensor *Tensor::createWithConstant(float value, TensorShape shape, TensorType dt
 
     delete[] mem;
     return out;
-}   
+}
+
+std::vector<int> Tensor::get2DConvOutputDim(cudnnConvolutionDescriptor_t opDesc,
+                                         Tensor *x, cudnnFilterDescriptor_t filterDesc)
+{
+    using namespace  std;
+    vector<int> out_dim;
+    int n, c, h ,w;
+    cudnnStatus_t status;
+    status = cudnnGetConvolution2dForwardOutputDim(opDesc, x->cudnnTensorDescriptor, filterDesc, &n, &c, &h, &w);
+    cudnnExitOnError(status, "Conv2d out dims error");
+
+    out_dim.push_back(n);
+    out_dim.push_back(c);
+    out_dim.push_back(h);
+    out_dim.push_back(w);
+    return out_dim;
+}
+
+size_t Tensor::getConvAlgoWorkspaceSize(Tensor* dest,Tensor* kernel, Tensor* input, cudnnFilterDescriptor_t kernelDesc,
+        cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo  )
+{
+    return getConvolutionAlgoForwardSize(input->cudnnTensorDescriptor, kernelDesc, convDesc, dest->cudnnTensorDescriptor, algo) ;
+}
+
+cudnnConvolutionFwdAlgo_t Tensor::getConvAlgo(Tensor* dest, Tensor* input, 
+                    cudnnFilterDescriptor_t kernelDesc, cudnnConvolutionDescriptor_t convDesc)
+{
+    return findConvForwardAlgo(input->cudnnTensorDescriptor, 
+                    kernelDesc, convDesc, dest->cudnnTensorDescriptor);
+}

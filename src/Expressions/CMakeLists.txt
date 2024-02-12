@@ -10,4 +10,6 @@ add_library(Expressions STATIC
     Activation.cpp
     Softmax.cpp
     CategoricalCrossentropy.cpp
+    Reshape.cpp
+    Conv2D.cpp
 )

@@ -12,10 +12,14 @@ struct MatmulDesc
 
 void initCudnn();
 void destroyCudnn();
+void cudnnExitOnError(cudnnStatus_t status, const char* msg);
 
 cudnnTensorDescriptor_t createCudnnDescriptor(TensorType dtype, TensorShape shape);
 cudnnReduceTensorDescriptor_t createCudnnReduceDescriptor(cudnnReduceTensorOp_t reduce_op);
 cudnnActivationDescriptor_t createCudnnActivationDescriptor(cudnnActivationMode_t mode, double coef);
+cudnnConvolutionDescriptor_t  createConv2Ddescriptor(int padding_y, int padding_x, 
+                                                    int stride_y, int stride_x,int dilation_y, int dilation_x );
+cudnnFilterDescriptor_t createConv2DFilterDesc(int out, int in, int height, int width);
 
 void destroyCudnnDescriptor(void* descriptor);
 
@@ -36,4 +40,15 @@ void activationFunctionBackward(cudnnActivationDescriptor_t opDesc, DevicePointe
     
 void softmaxFunctionForward(DevicePointer *dest,  DevicePointer *Operand, 
                          cudnnTensorDescriptor_t destDesc, cudnnTensorDescriptor_t  OperandDesc);
+
+void cudnnConvolution2DForward(cudnnTensorDescriptor_t inputDesc,void *input,
+                cudnnFilterDescriptor_t filterDesc, void *filter,cudnnConvolutionDescriptor_t convDesc,
+                cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workspaceSize,
+                cudnnTensorDescriptor_t resDesc, void *result );
+
+size_t getConvolutionAlgoForwardSize( cudnnTensorDescriptor_t xDesc, cudnnFilterDescriptor_t wDesc,
+                        cudnnConvolutionDescriptor_t convDesc, cudnnTensorDescriptor_t yDesc, cudnnConvolutionFwdAlgo_t algo);
+
+cudnnConvolutionFwdAlgo_t  findConvForwardAlgo(cudnnTensorDescriptor_t inputDesc, cudnnFilterDescriptor_t kernelDesc,
+                            cudnnConvolutionDescriptor_t convDesc, cudnnTensorDescriptor_t destDesc);
 #endif

@@ -109,8 +109,8 @@ cudnnTensorDescriptor_t createCudnnDescriptor(TensorType dtype, TensorShape shap
         stride = stride * dim[i];
     } 
 
-    //status = cudnnSetTensorNdDescriptor(desc, getDataType(dtype), dimCount, dim, dimStride);
-    status = cudnnSetTensorNdDescriptorEx(desc, CUDNN_TENSOR_NHWC ,getDataType(dtype), dimCount, dim);
+    status = cudnnSetTensorNdDescriptor(desc, getDataType(dtype), dimCount, dim, dimStride);
+    //status = cudnnSetTensorNdDescriptorEx(desc, CUDNN_TENSOR_NHWC ,getDataType(dtype), dimCount, dim);
     cudnnExitOnError(status, "Cudnn tensor descriptor set failed! \n");
     delete[] dim;
     delete[] dimStride;
@@ -161,6 +161,30 @@ cudnnActivationDescriptor_t createCudnnActivationDescriptor(cudnnActivationMode_
     return out;
 }
 
+cudnnConvolutionDescriptor_t createConv2Ddescriptor(int padding_y, int padding_x, 
+                                                    int stride_y, int stride_x,int dilation_y, int dilation_x)
+{
+    cudnnConvolutionDescriptor_t descOut;
+    cudnnStatus_t status = cudnnCreateConvolutionDescriptor(&descOut);
+    cudnnExitOnError(status, "Cudnn convolution descriptor failed! \n");
+    status = cudnnSetConvolution2dDescriptor(descOut, padding_y,padding_x, stride_y, 
+                            stride_x, dilation_y, dilation_x, CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT);
+    cudnnExitOnError(status, "Cudnn convolution setting descriptor failed! \n");
+    return descOut;
+}
+
+cudnnFilterDescriptor_t createConv2DFilterDesc(int out, int in, int height, int width)
+{
+    cudnnFilterDescriptor_t descOut;
+    cudnnStatus_t status = cudnnCreateFilterDescriptor(&descOut);
+    cudnnExitOnError(status, "Cudnn convolution filter descriptor failed! \n");
+    status = cudnnSetFilter4dDescriptor(descOut, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, out, in, height, width);
+    cudnnExitOnError(status, "Cudnn convolution filter setting failed! \n");
+
+    return descOut;
+}
+
+
 void reduceTensors(const cudnnReduceTensorDescriptor_t reduceTensorDesc,  
                     const void *alpha, DevicePointer *Operand, const void* OperandDesc,
                     const void *beta, const void* DestinationDesc, DevicePointer *Destination)
@@ -186,7 +210,7 @@ cudnnTensorDescriptor_t destDesc, cudnnTensorDescriptor_t  srcDesc )
     status = cudnnActivationForward(*cudnnHandle, opDesc, &alpha, srcDesc, src,&beta, destDesc, dest);
     cudaDeviceSynchronize();
 #ifdef DEBUG
-    cudnnExitOnError(status, "activation function fordward pass error! \n");
+    cudnnExitOnError(status, "activation function forward pass error! \n");
 #endif
 }
 
@@ -217,6 +241,52 @@ void softmaxFunctionForward(DevicePointer *dest, DevicePointer *Operand,
                                     &alpha, OperandDesc, Operand, &beta, destDesc, dest );
     cudaDeviceSynchronize();
 #ifdef DEBUG
-    cudnnExitOnError(status, "activation function backward pass error! \n");
+    cudnnExitOnError(status, "softmax forward pass error! \n");
 #endif
+}
+
+
+void cudnnConvolution2DForward(cudnnTensorDescriptor_t inputDesc,void *input,
+                cudnnFilterDescriptor_t filterDesc, void *filter,cudnnConvolutionDescriptor_t convDesc,
+                cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workspaceSize,
+                cudnnTensorDescriptor_t resDesc,void *result
+)
+{
+    float alpha = 1;
+    float beta = 0;
+    cudnnStatus_t status;
+
+    status = cudnnConvolutionForward(*cudnnHandle, &alpha, inputDesc, input, filterDesc, 
+                                    filter,convDesc, algo, workSpace, workspaceSize, &beta, resDesc, result );
+    cudaDeviceSynchronize();
+
+#ifdef DEBUG
+    cudnnExitOnError(status, "convolution forward pass error! \n");
+#endif
+}
+
+size_t getConvolutionAlgoForwardSize(cudnnTensorDescriptor_t inputDesc, cudnnFilterDescriptor_t kernelDesc, 
+                    cudnnConvolutionDescriptor_t convDesc, cudnnTensorDescriptor_t resultDesc, cudnnConvolutionFwdAlgo_t algo)
+{
+    size_t size;
+    cudnnStatus_t status;
+    status = cudnnGetConvolutionForwardWorkspaceSize(*cudnnHandle, inputDesc, kernelDesc, convDesc, resultDesc, algo, &size);
+#ifdef DEBUG
+    cudnnExitOnError(status, "get convolution algo size error! \n");
+#endif
+    return size;
+}
+
+cudnnConvolutionFwdAlgo_t findConvForwardAlgo(cudnnTensorDescriptor_t inputDesc, cudnnFilterDescriptor_t kernelDesc,
+                                 cudnnConvolutionDescriptor_t convDesc, cudnnTensorDescriptor_t destDesc)
+{
+    int returnAlgoCount;
+    cudnnConvolutionFwdAlgoPerf_t  performanceArr[3];
+    cudnnStatus_t status;
+    status = cudnnFindConvolutionForwardAlgorithm(*cudnnHandle, inputDesc, kernelDesc, 
+    convDesc, destDesc, 3, &returnAlgoCount,  performanceArr);
+#ifdef DEBUG
+    cudnnExitOnError(status, "get convolution algo size error! \n");
+#endif
+    return performanceArr[0].algo;
 }

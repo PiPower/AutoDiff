@@ -1,7 +1,7 @@
 #include "Expression.hpp"
 
-#ifndef REDUCE_SUM
-#define REDUCE_SUM
+#ifndef RESHAPE
+#define RESHAPE
 /*
 f = reduce(x, axis)
 Calculates sum over given axis

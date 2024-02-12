@@ -22,14 +22,18 @@ int main()
     //ConstantInitializer init(1, TensorType::float32);
 
     Expression* model;
-    GlorotUniform v1_init(784, 32, TensorType::float32);
-    Input* v1 = new Input({64,784}, input_name);
-    Variable* v2 = new Variable({784, 32}, &v1_init);
-    model = new Matmul(v1, v2);
-    model = new Activation(model, ActivationType::sigmoid);
+    
+    Input* v1 = new Input({64,784 }, input_name);
+    model = new Reshape(v1, {64, 1, 28, 28});
 
-    GlorotUniform v3_init(32, 32, TensorType::float32);
-    Variable* v3 = new Variable({32, 32}, &v3_init);
+    GlorotUniform v2_init(32, 1, TensorType::float32);
+    Variable* v2 = new Variable({32, 1, 3, 3}, &v2_init);
+    model = new Conv2D(model, v2 );
+    model = new Reshape(model, {64, 26*26*32});
+
+
+    GlorotUniform v3_init(26*26*32, 32, TensorType::float32);
+    Variable* v3 = new Variable({26*26*32, 32}, &v3_init);
     model = new Matmul(model, v3);
     model = new Activation(model, ActivationType::sigmoid);
 
@@ -58,7 +62,7 @@ int main()
             g.trainStep(data, 0.01, (i+1)% 50 == 0);
             if((i+1)% 50 == 0 )
             {
-                cout << "it is batch number :" << i << " epoch number: "<< e << endl;
+                cout << "it is batch number :" << i + 1 << " epoch number: "<< e + 1 << endl;
                 fflush(stdout);
             }
         }

@@ -48,8 +48,16 @@ public:
     static void log(Tensor* dest, Tensor* operand);
     static void CCfusionOpForward(Tensor* dest, Tensor* predictions, Tensor* labels);
     static void CCfusionOpBackward(Tensor* dest, Tensor* predictions, Tensor* labels);
-    //Tensor helper
+    static void Convolution2DForward(Tensor* dest,Tensor* kernel, Tensor* input, cudnnFilterDescriptor_t kernelDesc,
+        cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void* workSpace, size_t workspaceSize );
+    //miscellaneous
     static Tensor* createWithConstant(float value, TensorShape shape, TensorType dtype = TensorType::float32);
+    static std::vector<int> get2DConvOutputDim(cudnnConvolutionDescriptor_t opDesc,
+                                                    Tensor* x, cudnnFilterDescriptor_t filterDesc);
+    static size_t getConvAlgoWorkspaceSize(Tensor* dest,Tensor* kernel, Tensor* input, cudnnFilterDescriptor_t kernelDesc,
+        cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo );
+    static cudnnConvolutionFwdAlgo_t getConvAlgo(Tensor* dest, Tensor* input, 
+                    cudnnFilterDescriptor_t kernelDesc, cudnnConvolutionDescriptor_t convDesc);
 private:
     TensorShape shape;
     TensorType dtype;
