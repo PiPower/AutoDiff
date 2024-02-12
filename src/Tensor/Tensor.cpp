@@ -356,7 +356,7 @@ std::vector<int> Tensor::get2DConvOutputDim(cudnnConvolutionDescriptor_t opDesc,
     return out_dim;
 }
 
-size_t Tensor::getConvAlgoWorkspaceSize(Tensor* dest,Tensor* kernel, Tensor* input, cudnnFilterDescriptor_t kernelDesc,
+size_t Tensor::getConvAlgoWorkspaceSize(Tensor* dest, Tensor* input, cudnnFilterDescriptor_t kernelDesc,
         cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo  )
 {
     return getConvolutionAlgoForwardSize(input->cudnnTensorDescriptor, kernelDesc, convDesc, dest->cudnnTensorDescriptor, algo) ;
@@ -367,4 +367,43 @@ cudnnConvolutionFwdAlgo_t Tensor::getConvAlgo(Tensor* dest, Tensor* input,
 {
     return findConvForwardAlgo(input->cudnnTensorDescriptor, 
                     kernelDesc, convDesc, dest->cudnnTensorDescriptor);
+}
+
+cudnnConvolutionBwdDataAlgo_t Tensor::getConvBackwardDataAlgo(Tensor *propagatedGrad, Tensor *grad, 
+                                cudnnFilterDescriptor_t kernelDesc, cudnnConvolutionDescriptor_t convDesc)
+{
+    return findConvBackwardData(propagatedGrad->cudnnTensorDescriptor, kernelDesc, convDesc, grad->cudnnTensorDescriptor);
+}
+
+size_t Tensor::getConvBackwardDataAlgoWorkspaceSize(cudnnFilterDescriptor_t kernelDesc, Tensor *propagatedGradDesc,
+                             cudnnConvolutionDescriptor_t opDesc, Tensor *grad_xDesc, cudnnConvolutionBwdDataAlgo_t algo)
+{
+    return getConvBackwardDataAlgoSize(kernelDesc, propagatedGradDesc->cudnnTensorDescriptor, 
+                                                    opDesc, grad_xDesc->cudnnTensorDescriptor, algo);
+}
+
+size_t Tensor::getConvBackwardFilterAlgoWorkspaceSize(cudnnFilterDescriptor_t gradDesc, Tensor *propagatedGradDesc,
+                             cudnnConvolutionDescriptor_t opDesc, Tensor *inputDesc, cudnnConvolutionBwdFilterAlgo_t algo)
+{
+    return getConvBackwardFilterAlgoSize(gradDesc, propagatedGradDesc->cudnnTensorDescriptor, opDesc, inputDesc->cudnnTensorDescriptor, algo);
+}
+
+void Tensor::backwardConv2dData(cudnnFilterDescriptor_t kernelDesc, Tensor *kernel, Tensor *propGrad, 
+cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdDataAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, Tensor *grad)
+{
+    cudnnConv2DBackwardData(kernelDesc, kernel->tensorDeviceMemory, propGrad->cudnnTensorDescriptor, propGrad->tensorDeviceMemory, 
+    convDesc, algo, workSpace, workSpaceSizeInBytes, grad->cudnnTensorDescriptor, grad->tensorDeviceMemory);
+}
+
+void Tensor::backwardConv2dFilter(Tensor *input, Tensor *propGrad, cudnnConvolutionDescriptor_t convDesc,
+ cudnnConvolutionBwdFilterAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, cudnnFilterDescriptor_t gradDesc, Tensor *grad)
+{
+    cudnnConv2DBackwardFilter(input->cudnnTensorDescriptor, input->tensorDeviceMemory, propGrad->cudnnTensorDescriptor, propGrad->tensorDeviceMemory,
+    convDesc, algo, workSpace, workSpaceSizeInBytes, gradDesc, grad->tensorDeviceMemory);
+}
+
+cudnnConvolutionBwdFilterAlgo_t Tensor::getConvBackwardFilterAlgo(Tensor *propagatedGrad, Tensor *input,
+                                     cudnnFilterDescriptor_t gradDesc, cudnnConvolutionDescriptor_t convDesc)
+{
+    return findConvBackwardFilter(propagatedGrad->cudnnTensorDescriptor, gradDesc, convDesc, input->cudnnTensorDescriptor);
 }

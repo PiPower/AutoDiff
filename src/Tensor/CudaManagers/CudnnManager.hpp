@@ -51,4 +51,24 @@ size_t getConvolutionAlgoForwardSize( cudnnTensorDescriptor_t xDesc, cudnnFilter
 
 cudnnConvolutionFwdAlgo_t  findConvForwardAlgo(cudnnTensorDescriptor_t inputDesc, cudnnFilterDescriptor_t kernelDesc,
                             cudnnConvolutionDescriptor_t convDesc, cudnnTensorDescriptor_t destDesc);
+
+cudnnConvolutionBwdDataAlgo_t  findConvBackwardData(cudnnTensorDescriptor_t propagatedGrad, cudnnFilterDescriptor_t kernelDesc,
+                            cudnnConvolutionDescriptor_t convDesc, cudnnTensorDescriptor_t grad);
+
+cudnnConvolutionBwdFilterAlgo_t  findConvBackwardFilter(cudnnTensorDescriptor_t propagatedGrad, cudnnFilterDescriptor_t gradDesc,
+                            cudnnConvolutionDescriptor_t convDesc, cudnnTensorDescriptor_t inputDesc);
+
+size_t getConvBackwardDataAlgoSize(cudnnFilterDescriptor_t kernelDesc, cudnnTensorDescriptor_t propagatedGradDesc, 
+                                        cudnnConvolutionDescriptor_t  opDesc, cudnnTensorDescriptor_t grad_xDesc, cudnnConvolutionBwdDataAlgo_t algo);
+                                        
+size_t getConvBackwardFilterAlgoSize(cudnnFilterDescriptor_t gradDesc, cudnnTensorDescriptor_t propagatedGradDesc, 
+                                        cudnnConvolutionDescriptor_t  opDesc, cudnnTensorDescriptor_t inputDesc, cudnnConvolutionBwdFilterAlgo_t algo);
+
+void cudnnConv2DBackwardData(cudnnFilterDescriptor_t kernelDesc, void *kernel, cudnnTensorDescriptor_t propGradDesc, void *propGrad,
+                cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdDataAlgo_t algo, void *workSpace,
+                                     size_t workSpaceSizeInBytes, cudnnTensorDescriptor_t gradDesc, void *grad);
+
+void cudnnConv2DBackwardFilter(cudnnTensorDescriptor_t inputDesc, void *input, cudnnTensorDescriptor_t propGradDesc, void *propGrad,
+                cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdFilterAlgo_t algo, void *workSpace,
+                                     size_t workSpaceSizeInBytes,cudnnFilterDescriptor_t gradDesc, void *grad);
 #endif

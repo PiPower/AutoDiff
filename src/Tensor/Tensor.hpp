@@ -43,6 +43,7 @@ public:
     static void activationForward(cudnnActivationDescriptor_t opDesc, Tensor* dest, Tensor* operand);
     static void activationBackward(cudnnActivationDescriptor_t opDesc, Tensor* dest, Tensor* grad, 
                                                                 Tensor* prevOutput, Tensor* prevInput);
+                                    
     static void softmaxForward(Tensor* dest, Tensor* operand);
     static void exp(Tensor* dest, Tensor* operand);
     static void log(Tensor* dest, Tensor* operand);
@@ -54,10 +55,30 @@ public:
     static Tensor* createWithConstant(float value, TensorShape shape, TensorType dtype = TensorType::float32);
     static std::vector<int> get2DConvOutputDim(cudnnConvolutionDescriptor_t opDesc,
                                                     Tensor* x, cudnnFilterDescriptor_t filterDesc);
-    static size_t getConvAlgoWorkspaceSize(Tensor* dest,Tensor* kernel, Tensor* input, cudnnFilterDescriptor_t kernelDesc,
+
+    static size_t getConvAlgoWorkspaceSize(Tensor* dest, Tensor* input, cudnnFilterDescriptor_t kernelDesc,
         cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo );
+
     static cudnnConvolutionFwdAlgo_t getConvAlgo(Tensor* dest, Tensor* input, 
                     cudnnFilterDescriptor_t kernelDesc, cudnnConvolutionDescriptor_t convDesc);
+
+    static cudnnConvolutionBwdDataAlgo_t getConvBackwardDataAlgo(Tensor* propagatedGrad, Tensor* grad,
+     cudnnFilterDescriptor_t kernelDesc, cudnnConvolutionDescriptor_t convDesc );
+
+    static cudnnConvolutionBwdFilterAlgo_t getConvBackwardFilterAlgo(Tensor* propagatedGrad, Tensor* input,
+     cudnnFilterDescriptor_t gradDesc, cudnnConvolutionDescriptor_t convDesc );
+
+    static size_t getConvBackwardDataAlgoWorkspaceSize(cudnnFilterDescriptor_t kernelDesc, 
+    Tensor* propagatedGradDesc, cudnnConvolutionDescriptor_t  opDesc,  Tensor* grad_xDesc, cudnnConvolutionBwdDataAlgo_t algo);
+
+    static size_t getConvBackwardFilterAlgoWorkspaceSize(cudnnFilterDescriptor_t gradDesc, 
+    Tensor* propagatedGradDesc, cudnnConvolutionDescriptor_t  opDesc,  Tensor* inputDesc, cudnnConvolutionBwdFilterAlgo_t algo);
+
+    static void backwardConv2dData(cudnnFilterDescriptor_t kernelDesc, Tensor *kernel, Tensor *propGrad,
+    cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdDataAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, Tensor *grad);
+
+    static void backwardConv2dFilter(Tensor *input, Tensor *propGrad, cudnnConvolutionDescriptor_t convDesc,
+         cudnnConvolutionBwdFilterAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, cudnnFilterDescriptor_t gradDesc, Tensor *grad);
 private:
     TensorShape shape;
     TensorType dtype;

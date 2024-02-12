@@ -28,8 +28,10 @@ private:
     Vec2 stride;
     Vec2 padding;
     Vec2 dilation;
-    cudnnConvolutionFwdAlgo_t algo;
-    int workspaceSize;
+    cudnnConvolutionFwdAlgo_t algoForward;
+    cudnnConvolutionBwdDataAlgo_t algoBackwardData;    
+    cudnnConvolutionBwdFilterAlgo_t  algoBackwardKernel;
+    size_t workspaceSize;
     void* deviceWorkSpacePtr;
 };
 

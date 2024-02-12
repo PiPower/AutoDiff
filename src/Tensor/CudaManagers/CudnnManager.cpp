@@ -290,3 +290,84 @@ cudnnConvolutionFwdAlgo_t findConvForwardAlgo(cudnnTensorDescriptor_t inputDesc,
 #endif
     return performanceArr[0].algo;
 }
+
+cudnnConvolutionBwdDataAlgo_t findConvBackwardData(cudnnTensorDescriptor_t propagatedGrad,
+     cudnnFilterDescriptor_t kernelDesc, cudnnConvolutionDescriptor_t convDesc, cudnnTensorDescriptor_t grad)
+{
+    int returnAlgoCount;
+    cudnnConvolutionBwdDataAlgoPerf_t performanceArr[3];
+    cudnnStatus_t status;
+    status = cudnnFindConvolutionBackwardDataAlgorithm(*cudnnHandle, kernelDesc, propagatedGrad,
+                                         convDesc, grad, 3, &returnAlgoCount, performanceArr);
+#ifdef DEBUG
+    cudnnExitOnError(status, "get convolution data backward algo error! \n");
+#endif
+    return performanceArr[0].algo;
+}
+
+cudnnConvolutionBwdFilterAlgo_t findConvBackwardFilter(cudnnTensorDescriptor_t propagatedGrad, cudnnFilterDescriptor_t gradDesc, cudnnConvolutionDescriptor_t convDesc, cudnnTensorDescriptor_t inputDesc)
+{
+    int returnAlgoCount;
+    cudnnConvolutionBwdFilterAlgoPerf_t  performanceArr[3];
+    cudnnStatus_t status;
+    status = cudnnFindConvolutionBackwardFilterAlgorithm(*cudnnHandle, inputDesc, 
+            propagatedGrad, convDesc,gradDesc, 3, &returnAlgoCount, performanceArr); 
+#ifdef DEBUG
+    cudnnExitOnError(status, "get convolution filter backward algo error! \n");
+#endif
+    return performanceArr[0].algo;
+}
+
+size_t getConvBackwardDataAlgoSize(cudnnFilterDescriptor_t kernelDesc, cudnnTensorDescriptor_t propagatedGradDesc,
+                                             cudnnConvolutionDescriptor_t opDesc, cudnnTensorDescriptor_t grad_xDesc, cudnnConvolutionBwdDataAlgo_t algo)
+{
+    size_t size;
+    cudnnStatus_t status;
+    status = cudnnGetConvolutionBackwardDataWorkspaceSize(*cudnnHandle, kernelDesc, propagatedGradDesc, opDesc, grad_xDesc, algo, &size);
+#ifdef DEBUG
+    cudnnExitOnError(status, "get convolution data backward workspace size error! \n");
+#endif
+    return size;
+}
+
+size_t getConvBackwardFilterAlgoSize(cudnnFilterDescriptor_t gradDesc, cudnnTensorDescriptor_t propagatedGradDesc,
+                 cudnnConvolutionDescriptor_t opDesc, cudnnTensorDescriptor_t inputDesc, cudnnConvolutionBwdFilterAlgo_t algo)
+{
+    size_t size;
+    cudnnStatus_t status;
+    status = cudnnGetConvolutionBackwardFilterWorkspaceSize(*cudnnHandle,inputDesc, propagatedGradDesc, opDesc, gradDesc, algo, &size);
+#ifdef DEBUG
+    cudnnExitOnError(status, "get convolution filter backward workspace size error! \n");
+#endif
+    return size;
+}
+
+void cudnnConv2DBackwardData(cudnnFilterDescriptor_t kernelDesc, void *kernel, cudnnTensorDescriptor_t propGradDesc, void *propGrad,
+                cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdDataAlgo_t algo, void *workSpace,
+                                     size_t workSpaceSizeInBytes, cudnnTensorDescriptor_t gradDesc, void *grad)
+{
+    float alpha = 1.0;
+    float beta = 0 ;
+    cudnnStatus_t status;
+    status = cudnnConvolutionBackwardData(*cudnnHandle, &alpha, kernelDesc, kernel, propGradDesc, propGrad, convDesc,
+                                                    algo, workSpace, workSpaceSizeInBytes,&beta, gradDesc, grad );
+    cudaDeviceSynchronize();
+#ifdef DEBUG
+    cudnnExitOnError(status, "get convolution filter backward workspace size error! \n");
+#endif
+}
+
+void cudnnConv2DBackwardFilter(cudnnTensorDescriptor_t inputDesc, void *input, cudnnTensorDescriptor_t propGradDesc, void *propGrad,
+                        cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdFilterAlgo_t algo, void *workSpace,
+                                             size_t workSpaceSizeInBytes, cudnnFilterDescriptor_t gradDesc, void *grad)
+{
+    float alpha = 1.0;
+    float beta = 0 ;
+    cudnnStatus_t status;
+    status = cudnnConvolutionBackwardFilter(*cudnnHandle, &alpha, inputDesc, input, propGradDesc, propGrad, convDesc,
+    algo, workSpace, workSpaceSizeInBytes, &beta, gradDesc, grad);
+    cudaDeviceSynchronize();
+#ifdef DEBUG
+    cudnnExitOnError(status, "get convolution filter backward workspace size error! \n");
+#endif
+}

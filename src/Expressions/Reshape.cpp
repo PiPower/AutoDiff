@@ -11,6 +11,7 @@ void Reshape::build()
 {
     result = new Tensor(*children[0]->getTensor());
     result->tensorReshape(newShape);
+    oldShape  = children[0]->getTensor()->getShape();
 }
 
 void Reshape::execute()
