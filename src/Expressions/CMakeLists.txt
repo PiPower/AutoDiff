@@ -12,4 +12,5 @@ add_library(Expressions STATIC
     CategoricalCrossentropy.cpp
     Reshape.cpp
     Conv2D.cpp
+    Pooling2D.cpp
 )

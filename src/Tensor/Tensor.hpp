@@ -43,7 +43,6 @@ public:
     static void activationForward(cudnnActivationDescriptor_t opDesc, Tensor* dest, Tensor* operand);
     static void activationBackward(cudnnActivationDescriptor_t opDesc, Tensor* dest, Tensor* grad, 
                                                                 Tensor* prevOutput, Tensor* prevInput);
-                                    
     static void softmaxForward(Tensor* dest, Tensor* operand);
     static void exp(Tensor* dest, Tensor* operand);
     static void log(Tensor* dest, Tensor* operand);
@@ -51,6 +50,16 @@ public:
     static void CCfusionOpBackward(Tensor* dest, Tensor* predictions, Tensor* labels);
     static void Convolution2DForward(Tensor* dest,Tensor* kernel, Tensor* input, cudnnFilterDescriptor_t kernelDesc,
         cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void* workSpace, size_t workspaceSize );
+
+    static void backwardConv2dData(cudnnFilterDescriptor_t kernelDesc, Tensor *kernel, Tensor *propGrad,
+    cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdDataAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, Tensor *grad);
+
+    static void backwardConv2dFilter(Tensor *input, Tensor *propGrad, cudnnConvolutionDescriptor_t convDesc,
+         cudnnConvolutionBwdFilterAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, cudnnFilterDescriptor_t gradDesc, Tensor *grad);
+
+    static void Pool2DForward(Tensor* dest, Tensor* input, cudnnPoolingDescriptor_t poolingDesc);
+
+    static void Pool2DBackward(Tensor *prevInput, Tensor *propGrad, Tensor* prevOutput, Tensor *grad, cudnnPoolingDescriptor_t poolingDesc);
     //miscellaneous
     static Tensor* createWithConstant(float value, TensorShape shape, TensorType dtype = TensorType::float32);
     static std::vector<int> get2DConvOutputDim(cudnnConvolutionDescriptor_t opDesc,
@@ -74,11 +83,7 @@ public:
     static size_t getConvBackwardFilterAlgoWorkspaceSize(cudnnFilterDescriptor_t gradDesc, 
     Tensor* propagatedGradDesc, cudnnConvolutionDescriptor_t  opDesc,  Tensor* inputDesc, cudnnConvolutionBwdFilterAlgo_t algo);
 
-    static void backwardConv2dData(cudnnFilterDescriptor_t kernelDesc, Tensor *kernel, Tensor *propGrad,
-    cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdDataAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, Tensor *grad);
-
-    static void backwardConv2dFilter(Tensor *input, Tensor *propGrad, cudnnConvolutionDescriptor_t convDesc,
-         cudnnConvolutionBwdFilterAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, cudnnFilterDescriptor_t gradDesc, Tensor *grad);
+    static std::vector<int> get2DPoolingOutputDim(cudnnPoolingDescriptor_t opDesc, Tensor* input);
 private:
     TensorShape shape;
     TensorType dtype;

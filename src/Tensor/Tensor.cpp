@@ -307,6 +307,19 @@ void Tensor::Convolution2DForward(Tensor* dest,Tensor* kernel, Tensor* input, cu
     kernel->tensorDeviceMemory, convDesc, algo,workSpace, workspaceSize,dest->cudnnTensorDescriptor, dest->tensorDeviceMemory);
 }
 
+void Tensor::Pool2DForward(Tensor *dest, Tensor *input, cudnnPoolingDescriptor_t poolingDesc)
+{
+    pooling2DForward(poolingDesc, input->cudnnTensorDescriptor, input->tensorDeviceMemory, 
+    dest->cudnnTensorDescriptor, dest->tensorDeviceMemory);
+}
+
+void Tensor::Pool2DBackward(Tensor *prevInput, Tensor *propGrad, Tensor *prevOutput, Tensor *grad, cudnnPoolingDescriptor_t poolingDesc)
+{
+    pooling2DBackward(poolingDesc, prevOutput->cudnnTensorDescriptor, prevOutput->tensorDeviceMemory,
+        propGrad->cudnnTensorDescriptor, propGrad->tensorDeviceMemory, prevInput->cudnnTensorDescriptor, 
+                prevInput->cudnnTensorDescriptor, grad->cudnnTensorDescriptor, grad->tensorDeviceMemory);
+}
+
 void Tensor::tensorReshape(TensorShape newShape)
 {
     unsigned int newNumberOfElements = 1;
@@ -400,6 +413,22 @@ void Tensor::backwardConv2dFilter(Tensor *input, Tensor *propGrad, cudnnConvolut
 {
     cudnnConv2DBackwardFilter(input->cudnnTensorDescriptor, input->tensorDeviceMemory, propGrad->cudnnTensorDescriptor, propGrad->tensorDeviceMemory,
     convDesc, algo, workSpace, workSpaceSizeInBytes, gradDesc, grad->tensorDeviceMemory);
+}
+
+std::vector<int> Tensor::get2DPoolingOutputDim(cudnnPoolingDescriptor_t opDesc, Tensor* input)
+{
+    using namespace  std;
+    vector<int> out_dim;
+    int n, c, h ,w;
+    cudnnStatus_t status;
+    status = cudnnGetPooling2dForwardOutputDim(opDesc, input->cudnnTensorDescriptor, &n, &c, &h, &w);
+    cudnnExitOnError(status, "2D pooling out dims error");
+
+    out_dim.push_back(n);
+    out_dim.push_back(c);
+    out_dim.push_back(h);
+    out_dim.push_back(w);
+    return out_dim;
 }
 
 cudnnConvolutionBwdFilterAlgo_t Tensor::getConvBackwardFilterAlgo(Tensor *propagatedGrad, Tensor *input,

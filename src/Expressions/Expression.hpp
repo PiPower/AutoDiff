@@ -8,6 +8,14 @@
 struct BackwardData;
 
 
+struct Vec2
+{
+    int y;
+    int x;
+};
+
+
+
 class Graph;
 class Expression
 {

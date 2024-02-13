@@ -4,13 +4,6 @@
 #ifndef CONV_2D
 #define  CONV_2D
 
-
-struct Vec2
-{
-    int y;
-    int x;
-};
-
 /*
 Input image dim -> (batch_size, channels, height, width)
 Kernel dims -> (out_channels, channels, height width)

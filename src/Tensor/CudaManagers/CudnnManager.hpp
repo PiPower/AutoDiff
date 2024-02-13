@@ -71,4 +71,15 @@ void cudnnConv2DBackwardData(cudnnFilterDescriptor_t kernelDesc, void *kernel, c
 void cudnnConv2DBackwardFilter(cudnnTensorDescriptor_t inputDesc, void *input, cudnnTensorDescriptor_t propGradDesc, void *propGrad,
                 cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdFilterAlgo_t algo, void *workSpace,
                                      size_t workSpaceSizeInBytes,cudnnFilterDescriptor_t gradDesc, void *grad);
+
+cudnnPoolingDescriptor_t create2DPoolingDesc(cudnnPoolingMode_t mode,int windowHeight, int windowWidth,
+                        int verticalPadding, int horizontalPadding, int verticalStride, int horizontalStride);
+
+void pooling2DForward(cudnnPoolingDescriptor_t poolingDesc, cudnnTensorDescriptor_t inputDesc,
+    void *x, cudnnTensorDescriptor_t destDesc, void *y);
+
+void pooling2DBackward(cudnnPoolingDescriptor_t poolingDesc, cudnnTensorDescriptor_t prevOutputDesc, void  *prevOutpu,
+                cudnnTensorDescriptor_t propagatedGradDesc, void *propagatedGrad, cudnnTensorDescriptor_t prevInputDesc,
+                                                            void *prevInput, cudnnTensorDescriptor_t gradDesc, void *grad);
+
 #endif

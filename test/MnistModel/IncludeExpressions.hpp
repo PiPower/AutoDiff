@@ -12,5 +12,6 @@
 #include "../../src/Expressions/CategoricalCrossentropy.hpp"
 #include "../../src/Expressions/Reshape.hpp"
 #include "../../src/Expressions/Conv2D.hpp"
+#include "../../src/Expressions/Pooling2D.hpp"
 
 #endif

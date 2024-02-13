@@ -18,22 +18,27 @@ int main()
     string input_name = "entry";
     string label_name = "labels";
     FeedData data;
-    GaussianInitializer init(0,1, TensorType::float32);
-    //ConstantInitializer init(1, TensorType::float32);
 
     Expression* model;
     
-    Input* v1 = new Input({64,784 }, input_name);
+    Input* v1 = new Input({64,784}, input_name);
     model = new Reshape(v1, {64, 1, 28, 28});
 
     GlorotUniform v2_init(32, 1, TensorType::float32);
     Variable* v2 = new Variable({32, 1, 3, 3}, &v2_init);
-    model = new Conv2D(model, v2 );
-    model = new Reshape(model, {64, 26*26*32});
+    model = new Conv2D(model, v2, {1,1}, {1,1} );
+    model = new Pooling2D(model, PoolingType::max);
 
 
-    GlorotUniform v3_init(26*26*32, 32, TensorType::float32);
-    Variable* v3 = new Variable({26*26*32, 32}, &v3_init);
+    GlorotUniform v5_init(32, 64, TensorType::float32);
+    Variable* v5 = new Variable({64, 32, 3, 3}, &v2_init);
+    model = new Conv2D(model, v5, {1,1}, {1,1} );
+    model = new Pooling2D(model, PoolingType::max);
+
+    model = new Reshape(model, {64, 7*7*64});
+
+    GlorotUniform v3_init(7*7*64, 32, TensorType::float32);
+    Variable* v3 = new Variable({7*7*64, 32}, &v3_init);
     model = new Matmul(model, v3);
     model = new Activation(model, ActivationType::sigmoid);
 

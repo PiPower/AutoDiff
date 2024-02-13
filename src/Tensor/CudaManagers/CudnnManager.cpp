@@ -371,3 +371,42 @@ void cudnnConv2DBackwardFilter(cudnnTensorDescriptor_t inputDesc, void *input, c
     cudnnExitOnError(status, "get convolution filter backward workspace size error! \n");
 #endif
 }
+
+cudnnPoolingDescriptor_t create2DPoolingDesc(cudnnPoolingMode_t mode, int windowHeight, int windowWidth,
+                     int verticalPadding, int horizontalPadding, int verticalStride, int horizontalStride)
+{
+    cudnnPoolingDescriptor_t poolDesc;
+    cudnnStatus_t status;
+    status = cudnnCreatePoolingDescriptor(&poolDesc);
+    cudnnExitOnError(status, "Could not create 2D pooling descriptor");
+    status = cudnnSetPooling2dDescriptor(poolDesc, mode, CUDNN_PROPAGATE_NAN, 
+            windowHeight, windowWidth, verticalPadding, horizontalPadding, verticalStride, horizontalStride );
+    cudnnExitOnError(status, "Could not set 2D pooling descriptor");
+    return poolDesc;
+}
+
+void pooling2DForward(cudnnPoolingDescriptor_t poolingDesc, cudnnTensorDescriptor_t inputDesc, 
+                                                void *x, cudnnTensorDescriptor_t destDesc, void *y)
+{
+    float alpha = 1.0;
+    float beta = 0 ;
+    cudnnStatus_t status;
+    status = cudnnPoolingForward(*cudnnHandle, poolingDesc, &alpha, inputDesc,
+    x, &beta, destDesc, y);
+
+    cudaDeviceSynchronize();
+    cudnnExitOnError(status, "2D pooling forward failed");
+}
+
+void pooling2DBackward(cudnnPoolingDescriptor_t poolingDesc, cudnnTensorDescriptor_t prevOutputDesc, void  *prevOutpu,
+                cudnnTensorDescriptor_t propagatedGradDesc, void *propagatedGrad, cudnnTensorDescriptor_t prevInputDesc,
+                                                            void *prevInput, cudnnTensorDescriptor_t gradDesc, void *grad)
+{
+    float alpha = 1.0;
+    float beta = 0 ;
+    cudnnStatus_t status;
+    status = cudnnPoolingBackward(*cudnnHandle, poolingDesc, &alpha, prevOutputDesc, prevOutpu,
+                propagatedGradDesc, propagatedGrad, prevInputDesc, prevInput, &beta, gradDesc, grad);
+    cudaDeviceSynchronize();
+    cudnnExitOnError(status, "2D pooling backward failed");
+}
