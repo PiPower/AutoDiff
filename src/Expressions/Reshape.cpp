@@ -16,6 +16,8 @@ void Reshape::build()
 
 void Reshape::execute()
 {
+    //for future add streams and async memcpy
+    cudaDeviceSynchronize();
     result->setTensor_DeviceToDevice(children[0]->getTensor());
 }
 

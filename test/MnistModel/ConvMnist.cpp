@@ -1,5 +1,6 @@
 #include "IncludeExpressions.hpp"
 #include "../../src/Graph/Graph.hpp"
+#include "../../src/Graph/Optimizers/SGD.hpp"
 #include "../../src/Utils/Initializers.hpp"
 #include "../../src/Tensor/Tensor.hpp"
 #include "./MnistDataset.hpp"
@@ -51,7 +52,8 @@ int main()
     CategoricalCrossentropy* loss = new CategoricalCrossentropy(model_soft, labels, {1});
     ReduceMean* sum = new ReduceMean(loss, {0,1});
 
-    Graph g(sum, {model_soft});
+    SGD* optimizer = new SGD(0.01);
+    Graph g(sum, {model_soft}, optimizer);
 
     g.compileGraph();
     g.build();
@@ -64,7 +66,7 @@ int main()
             data[input_name] = dataset.getTrainBatch(i)[0];
             data[label_name] = dataset.getTrainBatch(i)[1];
 
-            g.trainStep(data, 0.01, (i+1)% 50 == 0);
+            g.trainStep(data, (i+1)% 50 == 0);
             if((i+1)% 50 == 0 )
             {
                 cout << "it is batch number :" << i + 1 << " epoch number: "<< e + 1 << endl;

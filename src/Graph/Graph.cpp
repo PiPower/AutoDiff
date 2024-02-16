@@ -4,9 +4,9 @@
 #include <iostream>
 using namespace std;
 
-Graph::Graph(Expression *graph, std::vector<Expression*> outputNodes)
+Graph::Graph(Expression *graph, std::vector<Expression*> outputNodes, Optimizer* optimizer)
 :
-headOfGraph(graph), outputNodes(outputNodes),lastInferenceNode(-1)
+headOfGraph(graph), outputNodes(outputNodes),lastInferenceNode(-1), optimizer(optimizer)
 {
 }
 /*
@@ -123,6 +123,8 @@ void Graph::build()
     {
         node->build();
     }
+
+    optimizer->build(variableList);
 }
 
 void Graph::trainCall(std::map<std::string, Tensor*>& inputs)
@@ -197,27 +199,21 @@ void Graph::backwardPass()
     //all the remaining gradient belong to Variables/Inputs
 }
 
-void Graph::trainStep(FeedData &dataIn, float step, bool printLoss)
+void Graph::trainStep(FeedData &dataIn, bool printLoss)
 {
-    float* eta;
-    cudaMalloc(&eta, sizeof(float));
-    cudaMemcpy(eta, &step, sizeof(float), cudaMemcpyHostToDevice);
-
     trainCall(dataIn);
     if(printLoss) executionList[executionList.size()-1]->getTensor()->printTensor(stdout);
     backwardPass();
-    applyGradients(eta);
-
-    cudaFree(eta);
+    applyGradients();
 }
 
-void Graph::applyGradients(float* eta)
+void Graph::applyGradients()
 {
     for(Variable* var : variableList)
     {
         Tensor* grad = matchGradient(var, gradientRouteData);
         logErrorAndExit(grad == nullptr, "No gradient for variable node\n");
-        Tensor::scaleByConstant(grad, grad, eta);
+        optimizer->updateGradient(var, grad);
         var->applyGradients(grad);
         delete grad;
     }
