@@ -58,7 +58,7 @@ int main()
     g.compileGraph();
     g.build();
    
-    int epochs = 5;
+    int epochs = 2;
     for(int e =0; e < epochs; e++)
     {
         for(int i=0; i < dataset.getTrainBatchCount(); i++)

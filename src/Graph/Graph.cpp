@@ -209,6 +209,7 @@ void Graph::trainStep(FeedData &dataIn, bool printLoss)
 
 void Graph::applyGradients()
 {
+    optimizer->nextLoop();
     for(Variable* var : variableList)
     {
         Tensor* grad = matchGradient(var, gradientRouteData);
