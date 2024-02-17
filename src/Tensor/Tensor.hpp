@@ -28,6 +28,7 @@ public:
     TensorShape getShape();
     TensorType getType();
     void buildDescriptors();
+    static void streamSync();
     ~Tensor();
 
     // Tensor ops

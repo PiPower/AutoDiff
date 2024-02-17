@@ -3,6 +3,7 @@ C/C++ api for tensor cuda operations. Supports tensors with rank up to 5
 
 
 */
+#include <cuda_runtime_api.h>
 
 #ifndef CUDA_KERNEL_LIB
 #define CUDA_KERNEL_LIB
@@ -17,6 +18,9 @@ struct TensorDesc
     unsigned int dim[5];
     unsigned int dimStrides[5];
 };
+
+
+void setStreamForOpModule(cudaStream_t stream);
 
 void addTensorsOp(float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);
 void mulTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc);

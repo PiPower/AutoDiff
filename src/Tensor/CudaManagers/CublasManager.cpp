@@ -13,7 +13,7 @@ void cublasExitOnError(cublasStatus_t status, const char* msg)
     }
 }
 
-void initCublas()
+void initCublas(cudaStream_t stream)
 {
     if(cublasHandle != nullptr)
     {
@@ -23,12 +23,14 @@ void initCublas()
     cublasHandle = (cublasHandle_t*)malloc(sizeof(cublasHandle_t));
     cublasStatus_t status = cublasCreate(cublasHandle);
     cublasExitOnError(status, "Cublas initialization failed! \n");
-    
+
 #ifdef LOG_CUBLAS
     fclose(fopen("./cublasLogs.txt", "w"));
     status = cublasLoggerConfigure(true, 0,0,"./cublasLogs.txt" );
     cublasExitOnError(status, "Cublas could not start logging! \n");
 #endif
+    status = cublasSetStream(*cublasHandle, stream);
+    cublasExitOnError(status, "could not set stream for cublas \n");
 }
 
 void destroyCublas()

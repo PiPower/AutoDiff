@@ -10,9 +10,10 @@ struct MatmulDesc
     cudnnBackendDescriptor_t varianPack;
 };
 
-void initCudnn();
+void initCudnn(cudaStream_t stream);
 void destroyCudnn();
 void cudnnExitOnError(cudnnStatus_t status, const char* msg);
+
 
 cudnnTensorDescriptor_t createCudnnDescriptor(TensorType dtype, TensorShape shape);
 cudnnReduceTensorDescriptor_t createCudnnReduceDescriptor(cudnnReduceTensorOp_t reduce_op);

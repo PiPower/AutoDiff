@@ -41,12 +41,20 @@ void ReduceSum::build()
 void ReduceSum::execute()
 {
     Tensor::reduceTensor(opDescriptor, result,  children[0]->getTensor());
-    if(!keepDim) result->tensorReshape(newShape);
+    if(!keepDim)
+    {
+        Tensor::streamSync();
+        result->tensorReshape(newShape);
+    } 
 }
 
 void ReduceSum::backwardPass(Tensor *propagatedGradient, BackwardData& storedGradients)
 {
-    if(!keepDim) propagatedGradient->tensorReshape(reducedShape);
+    if(!keepDim)
+    {
+        Tensor::streamSync();
+        propagatedGradient->tensorReshape(reducedShape);
+    }
     Tensor *grad = new Tensor( children[0]->getTensor()->getShape(),  children[0]->getTensor()->getType());
     Tensor::mulTensors(grad, ones, propagatedGradient);
 

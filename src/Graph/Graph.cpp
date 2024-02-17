@@ -125,6 +125,7 @@ void Graph::build()
     }
 
     optimizer->build(variableList);
+    cudaDeviceSynchronize();
 }
 
 void Graph::trainCall(std::map<std::string, Tensor*>& inputs)
@@ -154,28 +155,21 @@ Tensor *Graph::matchGradient(Expression *node, BackwardData &currentGradients)
     auto& grads = currentGradients.gradientTensors;
     auto& nodes = currentGradients.nodeAddres;
 
-    for(int i = 0; i < grads.size(); i++)
+    int i = 0;
+    for(; i < grads.size(); i++)
     {
         if( nodes[i] == node)
         {
             gradOut = currentGradients.gradientTensors[i];
-            grads.erase( grads.begin() + i);
-            nodes.erase(nodes.begin() + i);
             break;
         }
     }
 
-    int grad_count = grads.size();
-    for(int i = 0; i < grad_count; i++)
+    for(; i < grads.size(); i++)
     {
         if( nodes[i] == node)
         {
             Tensor::addTensors(gradOut,gradOut, currentGradients.gradientTensors[i]);
-            delete currentGradients.gradientTensors[i];
-            grads.erase(grads.begin() + i);
-            nodes.erase(nodes.begin() + i);
-            grad_count--;
-            i--;
         }
     }
 
@@ -185,15 +179,14 @@ Tensor *Graph::matchGradient(Expression *node, BackwardData &currentGradients)
 void Graph::backwardPass()
 {
     Tensor* grad = Tensor::createWithConstant(1.0f, {});
+
     for(int i=executionList.size()-1; i >=0; i--)
     {   
         executionList[i]->backwardPass(grad, gradientRouteData);
-        delete grad;
         if(i > 0)
         {
             grad = matchGradient(executionList[i-1], gradientRouteData);
             logErrorAndExit(grad == nullptr, "No gradient for op node\n");
-            
         }
     }
     //all the remaining gradient belong to Variables/Inputs
@@ -205,6 +198,16 @@ void Graph::trainStep(FeedData &dataIn, bool printLoss)
     if(printLoss) executionList[executionList.size()-1]->getTensor()->printTensor(stdout);
     backwardPass();
     applyGradients();
+
+    //sync execution and clear all grads 
+    Tensor::streamSync();
+    for(int i=0 ; i < gradientRouteData.gradientTensors.size(); i ++)
+    {
+        delete  gradientRouteData.gradientTensors[i];
+    }
+
+    gradientRouteData.gradientTensors.clear();
+    gradientRouteData.nodeAddres.clear();
 }
 
 void Graph::applyGradients()
@@ -216,16 +219,7 @@ void Graph::applyGradients()
         logErrorAndExit(grad == nullptr, "No gradient for variable node\n");
         optimizer->updateGradient(var, grad);
         var->applyGradients(grad);
-        delete grad;
     }
-    //clear additional gradients for input nodes
-    for(int i=0 ; i < gradientRouteData.gradientTensors.size(); i ++)
-    {
-        delete  gradientRouteData.gradientTensors[i];
-    }
-
-    gradientRouteData.gradientTensors.clear();
-    gradientRouteData.nodeAddres.clear();
 }
 
 std::vector<Tensor *> Graph::inferenceCall(FeedData& dataIn)
@@ -255,6 +249,7 @@ std::vector<Tensor *> Graph::inferenceCall(FeedData& dataIn)
         executionList[i]->execute();
     }
 
+    Tensor::streamSync();
     for(Expression* outputNode : outputNodes)
     {
         Tensor *t = new Tensor(*outputNode->getTensor()) ;

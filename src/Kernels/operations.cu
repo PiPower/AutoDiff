@@ -199,79 +199,78 @@ __global__ void _kernelCCfusionBackward(float* dest, float* predictions, float* 
     }
 }
 
+
+
+cudaStream_t cudaStreamKernel = nullptr;
+
+extern "C" void setStreamForOpModule(cudaStream_t stream)
+{
+    if(cudaStreamKernel == nullptr)
+    {
+        cudaStreamKernel = stream;
+    }
+}
+
 extern "C" void addTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
-    _kernelAddTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
-    cudaDeviceSynchronize();
+    _kernelAddTensors<<<16,16, 0, cudaStreamKernel>>>(dest, left, right, leftDesc, rightDesc);
 }
 
 extern "C" void subtractTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
-    _kernelSubtractTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
-    cudaDeviceSynchronize();
+    _kernelSubtractTensors<<<16,16, 0, cudaStreamKernel>>>(dest, left, right, leftDesc, rightDesc);
 }
 extern "C" void mulTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
-    _kernelMulTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
-    cudaDeviceSynchronize();
+    _kernelMulTensors<<<16,16, 0, cudaStreamKernel>>>(dest, left, right, leftDesc, rightDesc);
 }
 
 extern "C" void divideTensorsOp( float* dest, float* left, float* right, TensorDesc* leftDesc, TensorDesc* rightDesc)
 {
-    _kernelDivideTensors<<<16,16>>>(dest, left, right, leftDesc, rightDesc);
-    cudaDeviceSynchronize();
+    _kernelDivideTensors<<<16,16, 0, cudaStreamKernel>>>(dest, left, right, leftDesc, rightDesc);
 }
 
 extern "C" void axisAlignedAccumulationOp( float* dest, float* src, TensorDesc* destDesc, TensorDesc* srcDesc)
 {
-    _kernelAxisAlignedAccumulation<<<16,16>>>(dest, src, destDesc, srcDesc);
-    cudaDeviceSynchronize();
+    _kernelAxisAlignedAccumulation<<<16,16, 0, cudaStreamKernel>>>(dest, src, destDesc, srcDesc);
 }
 
 extern "C" void addConstantOp(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
 {
-    _kernelAddConstant<<<16,16>>>(dest, operand, scalar, leftDesc);
-    cudaDeviceSynchronize();
+    _kernelAddConstant<<<16,16, 0, cudaStreamKernel>>>(dest, operand, scalar, leftDesc);
 }
 
 extern "C" void divideByConstantOp(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
 {
-    _kernelDivideByConstant<<<16,16>>>(dest, operand, scalar, leftDesc);
-    cudaDeviceSynchronize();
+    _kernelDivideByConstant<<<16,16, 0, cudaStreamKernel>>>(dest, operand, scalar, leftDesc);
 }
 
 extern "C" void sqrtOp(float* dest, float* operand, TensorDesc* leftDesc)
 {
-    _kernelSqrt<<<16,16>>>(dest, operand, leftDesc);
-    cudaDeviceSynchronize();
+    _kernelSqrt<<<16,16, 0, cudaStreamKernel>>>(dest, operand, leftDesc);
 }
 
 extern "C" void scaleByConstantOp(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
 {
-    _kernelScaleByConstant<<<16,16>>>(dest, operand, scalar, leftDesc);
-    cudaDeviceSynchronize();
+    _kernelScaleByConstant<<<16,16, 0, cudaStreamKernel>>>(dest, operand, scalar, leftDesc);
 }
 
 extern "C" void expOp(float* dest, float* operand, TensorDesc* leftDesc)
 {
-    _kernelExp<<<16,16>>>(dest, operand, leftDesc);
-    cudaDeviceSynchronize();
+    _kernelExp<<<16,16, 0, cudaStreamKernel>>>(dest, operand, leftDesc);
 }
 
 extern "C" void logOp(float* dest, float* operand, TensorDesc* leftDesc)
 {
-    _kernelLog<<<16,16>>>(dest, operand, leftDesc);
-    cudaDeviceSynchronize();
+    _kernelLog<<<16,16, 0, cudaStreamKernel>>>(dest, operand, leftDesc);
 }
 
 extern "C" void CCfusionOpForwardOp(float* dest, float* predictions, float* labels, TensorDesc* desc)
 {
-    _kernelCCfusionForward<<<16,16>>>(dest, predictions, labels, desc);
-    cudaDeviceSynchronize();
+    _kernelCCfusionForward<<<16,16, 0, cudaStreamKernel>>>(dest, predictions, labels, desc);
 }
 
 extern "C" void CCfusionOpBackwardOp(float* dest, float* predictions, float* labels, TensorDesc* desc)
 {
-    _kernelCCfusionBackward<<<16,16>>>(dest, predictions, labels, desc);
-    cudaDeviceSynchronize();
+    _kernelCCfusionBackward<<<16,16, 0, cudaStreamKernel>>>(dest, predictions, labels, desc);
 }

@@ -44,7 +44,11 @@ void ReduceMean::build()
 void ReduceMean::execute()
 {
     Tensor::reduceTensor(opDescriptor, result,  children[0]->getTensor());
-    if(!keepDim) result->tensorReshape(newShape);
+    if(!keepDim) 
+    {
+         Tensor::streamSync();
+         result->tensorReshape(newShape);
+    }
 }
 
 void ReduceMean::backwardPass(Tensor *propagatedGradient, BackwardData& storedGradients)

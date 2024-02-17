@@ -4,14 +4,26 @@
 
 unsigned char typeSizeTable[] = {2, 4, 8, 2, 4, 8, 2, 4, 8};
 
+cudaStream_t cudaStream = nullptr;
+
+void initStream()
+{
+    if(cudaStream == nullptr)
+    {
+        cudaStreamCreate(&cudaStream);
+    }
+}
 
 Tensor::Tensor(TensorShape dim, TensorType dtype)
 :
 tensorDeviceMemory(nullptr), dtype(dtype), cudnnDescriptorInitialized(false)
 {
-    initCublas();
-    initCudnn();
+    initStream();
+    initCublas(cudaStream);
+    initCudnn(cudaStream);
+    setStreamForOpModule(cudaStream);
 
+    
     logErrorAndExit(dtype != TensorType::float32, "currently usupported tensor type\n");
     this->shape = dim;
     rank = dim.size();
@@ -172,6 +184,13 @@ void Tensor::buildDescriptors()
 
     cudnnTensorDescriptor = createCudnnDescriptor(dtype, shape);
     cudnnDescriptorInitialized = true;
+}
+
+void Tensor::streamSync()
+{
+    cudaError_t err;
+    err = cudaStreamSynchronize(cudaStream);
+    logErrorAndExit(err != cudaSuccess, "cuda stream sync failed \n");
 }
 
 Tensor::~Tensor()

@@ -58,7 +58,7 @@ void cudnnExitOnError(cudnnStatus_t status, const char* msg)
     }
 }
 
-void initCudnn()
+void initCudnn(cudaStream_t stream)
 {
     if(cudnnHandle != nullptr)
     {
@@ -76,6 +76,9 @@ void initCudnn()
     cudaError err;
     err = cudaMalloc(&workSpaceDvcPointer, workSpaceSize);
     logErrorAndExit(err != cudaSuccess, "could not allocate memory for cudnn workspace");
+
+    status = cudnnSetStream(*cudnnHandle, stream);
+    cudnnExitOnError(status, "Could not set stream for cudnn\n");
 }
 
 void destroyCudnn()
@@ -134,7 +137,6 @@ void addTensors(const void *alpha,
     cudnnStatus_t status;
     status = cudnnAddTensor(*cudnnHandle, alpha, (cudnnTensorDescriptor_t)OperandDesc,
     OperandDevice, beta, (cudnnTensorDescriptor_t)DestinationDesc, DestinationDevice);
-    cudaDeviceSynchronize();
 #ifdef DEBUG
     cudnnExitOnError(status, "Cudnn could not start logging! \n");
 #endif
@@ -194,7 +196,6 @@ void reduceTensors(const cudnnReduceTensorDescriptor_t reduceTensorDesc,
     workSpaceSize,alpha,(cudnnTensorDescriptor_t)OperandDesc, Operand,
     beta, (cudnnTensorDescriptor_t)DestinationDesc, Destination);
 
-    cudaDeviceSynchronize();
 #ifdef DEBUG
     cudnnExitOnError(status, "reduce op error! \n");
 #endif
@@ -208,7 +209,6 @@ cudnnTensorDescriptor_t destDesc, cudnnTensorDescriptor_t  srcDesc )
 
     cudnnStatus_t status;
     status = cudnnActivationForward(*cudnnHandle, opDesc, &alpha, srcDesc, src,&beta, destDesc, dest);
-    cudaDeviceSynchronize();
 #ifdef DEBUG
     cudnnExitOnError(status, "activation function forward pass error! \n");
 #endif
@@ -224,7 +224,6 @@ void activationFunctionBackward(cudnnActivationDescriptor_t opDesc, DevicePointe
     cudnnStatus_t status;
     status = cudnnActivationBackward(*cudnnHandle, opDesc, &alpha, prevOutputDesc, prevOutput, gradDesc,
                                 grad, prevInputDesc, prevInput, &beta, destDesc, dest );
-    cudaDeviceSynchronize();
 #ifdef DEBUG
     cudnnExitOnError(status, "activation function backward pass error! \n");
 #endif
@@ -239,7 +238,6 @@ void softmaxFunctionForward(DevicePointer *dest, DevicePointer *Operand,
     cudnnStatus_t status;
     status = cudnnSoftmaxForward(*cudnnHandle,CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_CHANNEL ,
                                     &alpha, OperandDesc, Operand, &beta, destDesc, dest );
-    cudaDeviceSynchronize();
 #ifdef DEBUG
     cudnnExitOnError(status, "softmax forward pass error! \n");
 #endif
@@ -258,7 +256,6 @@ void cudnnConvolution2DForward(cudnnTensorDescriptor_t inputDesc,void *input,
 
     status = cudnnConvolutionForward(*cudnnHandle, &alpha, inputDesc, input, filterDesc, 
                                     filter,convDesc, algo, workSpace, workspaceSize, &beta, resDesc, result );
-    cudaDeviceSynchronize();
 
 #ifdef DEBUG
     cudnnExitOnError(status, "convolution forward pass error! \n");
@@ -351,7 +348,6 @@ void cudnnConv2DBackwardData(cudnnFilterDescriptor_t kernelDesc, void *kernel, c
     cudnnStatus_t status;
     status = cudnnConvolutionBackwardData(*cudnnHandle, &alpha, kernelDesc, kernel, propGradDesc, propGrad, convDesc,
                                                     algo, workSpace, workSpaceSizeInBytes,&beta, gradDesc, grad );
-    cudaDeviceSynchronize();
 #ifdef DEBUG
     cudnnExitOnError(status, "get convolution filter backward workspace size error! \n");
 #endif
@@ -366,7 +362,6 @@ void cudnnConv2DBackwardFilter(cudnnTensorDescriptor_t inputDesc, void *input, c
     cudnnStatus_t status;
     status = cudnnConvolutionBackwardFilter(*cudnnHandle, &alpha, inputDesc, input, propGradDesc, propGrad, convDesc,
     algo, workSpace, workSpaceSizeInBytes, &beta, gradDesc, grad);
-    cudaDeviceSynchronize();
 #ifdef DEBUG
     cudnnExitOnError(status, "get convolution filter backward workspace size error! \n");
 #endif
@@ -394,7 +389,6 @@ void pooling2DForward(cudnnPoolingDescriptor_t poolingDesc, cudnnTensorDescripto
     status = cudnnPoolingForward(*cudnnHandle, poolingDesc, &alpha, inputDesc,
     x, &beta, destDesc, y);
 
-    cudaDeviceSynchronize();
     cudnnExitOnError(status, "2D pooling forward failed");
 }
 
@@ -407,6 +401,5 @@ void pooling2DBackward(cudnnPoolingDescriptor_t poolingDesc, cudnnTensorDescript
     cudnnStatus_t status;
     status = cudnnPoolingBackward(*cudnnHandle, poolingDesc, &alpha, prevOutputDesc, prevOutpu,
                 propagatedGradDesc, propagatedGrad, prevInputDesc, prevInput, &beta, gradDesc, grad);
-    cudaDeviceSynchronize();
     cudnnExitOnError(status, "2D pooling backward failed");
 }
