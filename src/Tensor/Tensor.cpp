@@ -251,11 +251,32 @@ void Tensor::matmul(Tensor *dest, Tensor *left, Tensor *right, bool transposeLef
     &beta, (float*)dest->tensorDeviceMemory, a_rows);
 }
 
+void Tensor::addConstant(Tensor *dest, Tensor *operand, DevicePointer *scalar)
+{
+    logErrorAndExit(dest->getShape() != operand->getShape(), 
+         "Not matching dimensions of dest and operand for scale by constant \n");
+    addConstantOp((float*)dest->tensorDeviceMemory, (float*)operand->tensorDeviceMemory,  (float*)scalar, operand->cudaDescriptorDevice);
+}
+
 void Tensor::scaleByConstant(Tensor *dest, Tensor *operand, DevicePointer *scalar)
 {
     logErrorAndExit(dest->getShape() != operand->getShape(), 
          "Not matching dimensions of dest and operand for scale by constant \n");
     scaleByConstantOp((float*)dest->tensorDeviceMemory, (float*)operand->tensorDeviceMemory,  (float*)scalar, operand->cudaDescriptorDevice);
+}
+
+void Tensor::divideByConstant(Tensor *dest, Tensor *operand, DevicePointer *scalar)
+{
+    logErrorAndExit(dest->getShape() != operand->getShape(), 
+         "Not matching dimensions of dest and operand for scale by constant \n");
+    divideByConstantOp((float*)dest->tensorDeviceMemory, (float*)operand->tensorDeviceMemory,  (float*)scalar, operand->cudaDescriptorDevice);
+}
+
+void Tensor::sqrt(Tensor *dest, Tensor *operand)
+{
+    logErrorAndExit(dest->getShape() != operand->getShape(), 
+         "Not matching dimensions of dest and operand for scale by constant \n");
+    sqrtOp((float*)dest->tensorDeviceMemory, (float*)operand->tensorDeviceMemory, operand->cudaDescriptorDevice);
 }
 
 void Tensor::activationForward(cudnnActivationDescriptor_t opDesc, Tensor *dest, Tensor *operand)

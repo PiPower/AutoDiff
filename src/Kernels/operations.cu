@@ -121,6 +121,39 @@ __global__ void _kernelScaleByConstant(float* dest, float* operand, float* scala
     }
 }
 
+__global__ void _kernelAddConstant(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
+{
+    unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
+    while (threadIndex < upper_memory_bound)
+    {
+        dest[threadIndex] = (*scalar) + (operand[threadIndex]); 
+        threadIndex = threadIndex + blockDim.x * gridDim.x;
+    }
+}
+
+__global__ void _kernelDivideByConstant(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
+{
+    unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
+    while (threadIndex < upper_memory_bound)
+    {
+        dest[threadIndex] = (operand[threadIndex]) / *scalar; 
+        threadIndex = threadIndex + blockDim.x * gridDim.x;
+    }
+}
+
+__global__ void _kernelSqrt(float* dest, float* operand, TensorDesc* leftDesc)
+{
+    unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
+    while (threadIndex < upper_memory_bound)
+    {
+        dest[threadIndex] = sqrt(operand[threadIndex]); 
+        threadIndex = threadIndex + blockDim.x * gridDim.x;
+    }
+}
+
 __global__ void _kernelExp(float* dest, float* operand, TensorDesc* leftDesc)
 {
     unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
@@ -192,6 +225,24 @@ extern "C" void divideTensorsOp( float* dest, float* left, float* right, TensorD
 extern "C" void axisAlignedAccumulationOp( float* dest, float* src, TensorDesc* destDesc, TensorDesc* srcDesc)
 {
     _kernelAxisAlignedAccumulation<<<16,16>>>(dest, src, destDesc, srcDesc);
+    cudaDeviceSynchronize();
+}
+
+extern "C" void addConstantOp(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
+{
+    _kernelAddConstant<<<16,16>>>(dest, operand, scalar, leftDesc);
+    cudaDeviceSynchronize();
+}
+
+extern "C" void divideByConstantOp(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
+{
+    _kernelDivideByConstant<<<16,16>>>(dest, operand, scalar, leftDesc);
+    cudaDeviceSynchronize();
+}
+
+extern "C" void sqrtOp(float* dest, float* operand, TensorDesc* leftDesc)
+{
+    _kernelSqrt<<<16,16>>>(dest, operand, leftDesc);
     cudaDeviceSynchronize();
 }
 

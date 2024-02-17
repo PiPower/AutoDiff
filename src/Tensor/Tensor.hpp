@@ -39,7 +39,10 @@ public:
     static void reduceTensor(cudnnReduceTensorDescriptor_t reduceDesc, Tensor* dest, Tensor* src);
     static void axisAlignedAccumulation(Tensor* dest, Tensor* src);
     static void matmul(Tensor* dest, Tensor* left, Tensor* right, bool transposeLeft = false, bool transposeRight= false);
+    static void addConstant(Tensor* dest, Tensor* operand, DevicePointer* scalar);
     static void scaleByConstant(Tensor* dest, Tensor* operand, DevicePointer* scalar);
+    static void divideByConstant(Tensor* dest, Tensor* operand, DevicePointer* scalar);
+    static void sqrt(Tensor* dest, Tensor* operand);
     static void activationForward(cudnnActivationDescriptor_t opDesc, Tensor* dest, Tensor* operand);
     static void activationBackward(cudnnActivationDescriptor_t opDesc, Tensor* dest, Tensor* grad, 
                                                                 Tensor* prevOutput, Tensor* prevInput);
