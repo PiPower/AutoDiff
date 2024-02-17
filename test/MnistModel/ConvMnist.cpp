@@ -1,6 +1,6 @@
 #include "IncludeExpressions.hpp"
 #include "../../src/Graph/Graph.hpp"
-#include "../../src/Graph/Optimizers/SGD.hpp"
+#include "../../src/Graph/Optimizers/Adam.hpp"
 #include "../../src/Utils/Initializers.hpp"
 #include "../../src/Tensor/Tensor.hpp"
 #include "./MnistDataset.hpp"
@@ -52,7 +52,7 @@ int main()
     CategoricalCrossentropy* loss = new CategoricalCrossentropy(model_soft, labels, {1});
     ReduceMean* sum = new ReduceMean(loss, {0,1});
 
-    SGD* optimizer = new SGD(0.01);
+    Adam* optimizer = new Adam(0.001);
     Graph g(sum, {model_soft}, optimizer);
 
     g.compileGraph();
