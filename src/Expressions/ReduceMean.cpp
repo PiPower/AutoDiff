@@ -39,6 +39,10 @@ void ReduceMean::build()
     float scale_factor = 1.0f/n;
     constant = Tensor::createWithConstant(scale_factor, children[0]->getTensor()->getShape(),  children[0]->getTensor()->getType());
     result = new Tensor(reducedShape, children[0]->getTensor()->getType());
+    if(!keepDim) 
+    {
+        newShapeIndex = result->tensorAddShape(newShape);
+    }
 }
 
 void ReduceMean::execute()
@@ -46,14 +50,17 @@ void ReduceMean::execute()
     Tensor::reduceTensor(opDescriptor, result,  children[0]->getTensor());
     if(!keepDim) 
     {
-         Tensor::streamSync();
-         result->tensorReshape(newShape);
+        result->tensorReshape(newShapeIndex);
     }
 }
 
 void ReduceMean::backwardPass(Tensor *propagatedGradient, BackwardData& storedGradients)
 {
-    if(!keepDim) propagatedGradient->tensorReshape(reducedShape);
+    if(!keepDim)
+    {
+        int shapeIndex = propagatedGradient->tensorAddShape(reducedShape);
+        propagatedGradient->tensorReshape(shapeIndex);
+    }
     Tensor *grad = new Tensor( children[0]->getTensor()->getShape(),  children[0]->getTensor()->getType());
     Tensor::mulTensors(grad, constant, propagatedGradient);
 

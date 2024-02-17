@@ -10,21 +10,19 @@ newShape(newShape)
 void Reshape::build()
 {
     result = new Tensor(*children[0]->getTensor());
-    result->tensorReshape(newShape);
+    newShapeIndex = result->tensorAddShape(newShape);
     oldShape  = children[0]->getTensor()->getShape();
 }
 
 void Reshape::execute()
 {
     //for future add streams and async memcpy
-    Tensor::streamSync();
     result->setTensor_DeviceToDevice(children[0]->getTensor());
 }
 
 void Reshape::backwardPass(Tensor *propagatedGradient, BackwardData &storedGradients)
 {
     Tensor* grad = new Tensor(oldShape, result->getType());
-    Tensor::streamSync();
     grad->setTensor_DeviceToDevice(propagatedGradient);
 
     storedGradients.gradientTensors.push_back(grad);

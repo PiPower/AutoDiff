@@ -17,6 +17,7 @@ private:
     std::vector<unsigned int> axis;
     TensorShape newShape;
     bool keepDim;
+    int newShapeIndex;
     cudnnReduceTensorDescriptor_t  opDescriptor;
     Tensor* constant; 
     TensorShape reducedShape;

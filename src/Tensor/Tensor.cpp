@@ -16,21 +16,21 @@ void initStream()
 
 Tensor::Tensor(TensorShape dim, TensorType dtype)
 :
-tensorDeviceMemory(nullptr), dtype(dtype), cudnnDescriptorInitialized(false)
+tensorDeviceMemory(nullptr), dtype(dtype), currentShapeIndex(-1)
 {
     initStream();
     initCublas(cudaStream);
     initCudnn(cudaStream);
     setStreamForOpModule(cudaStream);
-
+    shapeInfo baseShape;
     
     logErrorAndExit(dtype != TensorType::float32, "currently usupported tensor type\n");
-    this->shape = dim;
-    rank = dim.size();
+    baseShape.shape = dim;
+    baseShape.rank = dim.size();
     cudaError err;
-    if(rank != 0 )
+    if(baseShape.rank != 0 )
     {
-        scalarTensor = false;
+        baseShape.scalar = false;
         unsigned int total_item_count = 1;
         for(auto& dimSize : dim)
         {
@@ -43,14 +43,14 @@ tensorDeviceMemory(nullptr), dtype(dtype), cudnnDescriptorInitialized(false)
     else
     {
         // rank 0 tensor ie scalar
-        scalarTensor = true;
+        baseShape.scalar = true;
         err =cudaMalloc(&tensorDeviceMemory, typeSizeTable[(unsigned int)dtype]);
     }
     logErrorAndExit(err != cudaSuccess, "Could not allocate memory for tensor on GPU");
 
-    err = cudaMalloc((void**)&cudaDescriptorDevice, sizeof(TensorDesc));
-    logErrorAndExit(err != cudaSuccess, "Could not allocate memory for tensor descriptor\n");
-    buildDescriptors();
+    buildDescriptors(&baseShape);
+    allRegisteredShapes.push_back(baseShape);
+    tensorReshape(0);
 }
 
 Tensor::Tensor(Tensor& src)
@@ -164,10 +164,8 @@ void Tensor::printTensor(FILE* stream, unsigned int print_max)
 
 }
 
-void Tensor::buildDescriptors()
+void Tensor::buildDescriptors(shapeInfo* newShapeInfo)
 {   
-    if(cudnnDescriptorInitialized)
-        destroyCudnnDescriptor(cudnnTensorDescriptor);
 
     TensorDesc cudaDescriptor;
     cudaDescriptor.ndim = rank;
@@ -179,11 +177,12 @@ void Tensor::buildDescriptors()
         stride *= cudaDescriptor.dim[i];
     }
     cudaError err;
-    err =cudaMemcpy(cudaDescriptorDevice, &cudaDescriptor, sizeof(TensorDesc), cudaMemcpyHostToDevice);
+    err = cudaMalloc(&newShapeInfo->cudaDescriptorDevice, sizeof(TensorDesc));
+    logErrorAndExit(err != cudaSuccess, "Could not allocate memory for tensor descriptor\n");
+    err =cudaMemcpy(newShapeInfo->cudaDescriptorDevice, &cudaDescriptor, sizeof(TensorDesc), cudaMemcpyHostToDevice);
     logErrorAndExit(err != cudaSuccess, "Could not set tensor descriptor on gpu side\n");
 
-    cudnnTensorDescriptor = createCudnnDescriptor(dtype, shape);
-    cudnnDescriptorInitialized = true;
+    newShapeInfo->cudnnTensorDescriptor = createCudnnDescriptor(dtype, shape);
 }
 
 void Tensor::streamSync()
@@ -196,9 +195,11 @@ void Tensor::streamSync()
 Tensor::~Tensor()
 {
     cudaFree(tensorDeviceMemory);
-    cudaFree(cudaDescriptorDevice);
-    if(cudnnDescriptorInitialized)
-        destroyCudnnDescriptor(cudnnTensorDescriptor);
+    for(shapeInfo& shape : allRegisteredShapes)
+    {
+        destroyCudnnDescriptor(shape.cudnnTensorDescriptor);
+        cudaFree(shape.cudaDescriptorDevice);
+    }
 
 }
 
@@ -360,8 +361,10 @@ void Tensor::Pool2DBackward(Tensor *prevInput, Tensor *propGrad, Tensor *prevOut
                 prevInput->cudnnTensorDescriptor, grad->cudnnTensorDescriptor, grad->tensorDeviceMemory);
 }
 
-void Tensor::tensorReshape(TensorShape newShape)
+int Tensor::tensorAddShape(TensorShape newShape)
 {
+    shapeInfo newShapeDesc;
+    
     unsigned int newNumberOfElements = 1;
     for(int i = newShape.size() -1 ; i >=0; i--)
     {
@@ -371,11 +374,28 @@ void Tensor::tensorReshape(TensorShape newShape)
     logErrorAndExit(newNumberOfElements != getNumberOfElements(), 
          "Not matching previous number of elements with new one \n");
 
-    if(newShape.size() == 0 ) scalarTensor = true;
-    if(newShape.size() > 0 ) scalarTensor = false;
-    shape = newShape;
-    rank = newShape.size();
-    buildDescriptors();
+    if(newShape.size() == 0 ) newShapeDesc.scalar = true;
+    if(newShape.size() > 0 ) newShapeDesc.scalar = false;
+    newShapeDesc.shape = newShape;
+
+    newShapeDesc.rank = newShape.size();
+    buildDescriptors(&newShapeDesc);
+    allRegisteredShapes.push_back(newShapeDesc);
+    return allRegisteredShapes.size() - 1;
+}
+
+int Tensor::tensorReshape(int shapeIndex)
+{
+    shape = allRegisteredShapes[shapeIndex].shape;
+    rank = allRegisteredShapes[shapeIndex].rank;
+    scalarTensor = allRegisteredShapes[shapeIndex].scalar;
+    cudnnTensorDescriptor = allRegisteredShapes[shapeIndex].cudnnTensorDescriptor;
+    cudaDescriptorDevice = allRegisteredShapes[shapeIndex].cudaDescriptorDevice;
+
+    int shapeIndexBuffer = currentShapeIndex;
+    currentShapeIndex = shapeIndex;
+
+    return shapeIndexBuffer;
 }
 
 Tensor *Tensor::createWithConstant(float value, TensorShape shape, TensorType dtype)

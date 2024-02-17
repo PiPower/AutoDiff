@@ -10,6 +10,16 @@
 /*
 Support up to 5D tensors
 */
+
+struct shapeInfo
+{
+    cudnnTensorDescriptor_t cudnnTensorDescriptor;
+    TensorDesc* cudaDescriptorDevice;
+    bool scalar;
+    TensorShape shape;
+    unsigned int rank;
+};
+
 class Tensor
 {
 public:
@@ -24,15 +34,16 @@ public:
     char* getTensorValues();
     void printTensor(FILE* stream, unsigned int print_max = 0);
     unsigned int getNumberOfElements();
+    int tensorAddShape(TensorShape newShape);
+    int tensorReshape(int shapeIndex);
     unsigned int getRank();
     TensorShape getShape();
     TensorType getType();
-    void buildDescriptors();
+    void buildDescriptors(shapeInfo* newShapeInfo);
     static void streamSync();
     ~Tensor();
 
     // Tensor ops
-    void tensorReshape(TensorShape newShape);
     static void addTensors(Tensor* dest, Tensor* left, Tensor* right);
     static void subtractTensors(Tensor* dest, Tensor* left, Tensor* right);
     static void mulTensors(Tensor* dest, Tensor* left, Tensor* right);
@@ -95,7 +106,8 @@ private:
     unsigned int rank;
     bool scalarTensor;
     cudnnTensorDescriptor_t cudnnTensorDescriptor;
+    std::vector<shapeInfo> allRegisteredShapes;
     TensorDesc *cudaDescriptorDevice;
-    bool cudnnDescriptorInitialized; 
+    int currentShapeIndex;
 };
 #endif

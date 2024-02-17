@@ -16,6 +16,8 @@ public:
 private:
     TensorShape oldShape;
     TensorShape newShape;
+    int oldShapeIndex;
+    int newShapeIndex;
 };
 
 #endif
