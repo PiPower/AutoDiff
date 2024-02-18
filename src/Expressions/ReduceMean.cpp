@@ -42,12 +42,20 @@ void ReduceMean::build()
     if(!keepDim) 
     {
         newShapeIndex = result->tensorAddShape(newShape);
+        oldShapeIndex = result->tensorReshape(newShapeIndex);
     }
+
 }
 
 void ReduceMean::execute()
 {
+    if(!keepDim)
+    {
+        result->tensorReshape(oldShapeIndex);
+    } 
+
     Tensor::reduceTensor(opDescriptor, result,  children[0]->getTensor());
+    
     if(!keepDim) 
     {
         result->tensorReshape(newShapeIndex);

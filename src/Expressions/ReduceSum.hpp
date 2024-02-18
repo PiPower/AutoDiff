@@ -18,6 +18,7 @@ private:
     TensorShape newShape;
     bool keepDim;
     int  newShapeIndex;
+    int oldShapeIndex;
     cudnnReduceTensorDescriptor_t  opDescriptor;
     Tensor* ones; 
     TensorShape reducedShape;

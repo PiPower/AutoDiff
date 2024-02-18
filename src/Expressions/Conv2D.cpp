@@ -47,8 +47,8 @@ void Conv2D::build()
     cudaError_t status;
     if(workspaceSize > 0 )
     {
-    status = cudaMalloc(&deviceWorkSpacePtr, workspaceSize);
-    logErrorAndExit(status != cudaSuccess, "Could not allocate memory for convolution");
+        status = cudaMalloc(&deviceWorkSpacePtr, workspaceSize);
+        logErrorAndExit(status != cudaSuccess, "Could not allocate memory for convolution");
     }
 
 }

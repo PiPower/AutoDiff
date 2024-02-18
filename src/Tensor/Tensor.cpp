@@ -168,11 +168,11 @@ void Tensor::buildDescriptors(shapeInfo* newShapeInfo)
 {   
 
     TensorDesc cudaDescriptor;
-    cudaDescriptor.ndim = rank;
+    cudaDescriptor.ndim = newShapeInfo->rank;
     unsigned int stride =1;
     for(int i = cudaDescriptor.ndim -1 ; i >=0; i--)
     {
-        cudaDescriptor.dim[i] = shape[i];
+        cudaDescriptor.dim[i] = newShapeInfo->shape[i];
         cudaDescriptor.dimStrides[i] = stride;
         stride *= cudaDescriptor.dim[i];
     }
@@ -182,7 +182,7 @@ void Tensor::buildDescriptors(shapeInfo* newShapeInfo)
     err =cudaMemcpy(newShapeInfo->cudaDescriptorDevice, &cudaDescriptor, sizeof(TensorDesc), cudaMemcpyHostToDevice);
     logErrorAndExit(err != cudaSuccess, "Could not set tensor descriptor on gpu side\n");
 
-    newShapeInfo->cudnnTensorDescriptor = createCudnnDescriptor(dtype, shape);
+    newShapeInfo->cudnnTensorDescriptor = createCudnnDescriptor(dtype, newShapeInfo->shape);
 }
 
 void Tensor::streamSync()

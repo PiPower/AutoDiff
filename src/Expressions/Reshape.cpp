@@ -9,8 +9,7 @@ newShape(newShape)
 
 void Reshape::build()
 {
-    result = new Tensor(*children[0]->getTensor());
-    newShapeIndex = result->tensorAddShape(newShape);
+    result = new Tensor(newShape, children[0]->getTensor()->getType());
     oldShape  = children[0]->getTensor()->getShape();
 }
 

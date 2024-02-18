@@ -125,7 +125,9 @@ void Graph::build()
     }
 
     optimizer->build(variableList);
+
     cudaDeviceSynchronize();
+    Tensor::streamSync();
 }
 
 void Graph::trainCall(std::map<std::string, Tensor*>& inputs)
