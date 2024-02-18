@@ -31,6 +31,8 @@ public:
     void setTensor_DeviceToDevice(Tensor* data);
     void setTensor_DeviceToDevice(DevicePointer* data);
     void setTensor_DeviceToDevice(DevicePointer* data, unsigned int byteSize, unsigned int offset = 0);
+    void setTensor_DeviceToDeviceAsync(Tensor* data);
+    void setTensor_DeviceToDeviceAsync(DevicePointer* data);
     char* getTensorValues();
     void printTensor(FILE* stream, unsigned int print_max = 0);
     unsigned int getNumberOfElements();

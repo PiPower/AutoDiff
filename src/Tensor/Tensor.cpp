@@ -130,6 +130,21 @@ void Tensor::setTensor_DeviceToDevice(DevicePointer *data, unsigned int byteSize
     logErrorAndExit(err != cudaSuccess, "Incorrent memory device to device copy");
 }
 
+void Tensor::setTensor_DeviceToDeviceAsync(Tensor *data)
+{
+    setTensor_DeviceToDeviceAsync(data->tensorDeviceMemory);
+}
+
+void Tensor::setTensor_DeviceToDeviceAsync(DevicePointer *data)
+{
+    logErrorAndExit(tensorDeviceMemory == nullptr, "Copy dest is unallocated  tensor!\n");
+    logErrorAndExit(data == nullptr, "Copy source is unallocated tensor!\n");
+    cudaError err;
+    err = cudaMemcpyAsync(tensorDeviceMemory, data, 
+         getNumberOfElements() * typeSizeTable[(unsigned int)dtype], cudaMemcpyDeviceToDevice, cudaStream);
+    logErrorAndExit(err != cudaSuccess, "Incorrent async memory device to device copy");
+}
+
 char *Tensor::getTensorValues()
 {
     logErrorAndExit(tensorDeviceMemory == nullptr, "Copy dest is unallocated  tensor!\n");

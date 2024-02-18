@@ -16,13 +16,13 @@ void Reshape::build()
 void Reshape::execute()
 {
     //for future add streams and async memcpy
-    result->setTensor_DeviceToDevice(children[0]->getTensor());
+    result->setTensor_DeviceToDeviceAsync(children[0]->getTensor());
 }
 
 void Reshape::backwardPass(Tensor *propagatedGradient, BackwardData &storedGradients)
 {
     Tensor* grad = new Tensor(oldShape, result->getType());
-    grad->setTensor_DeviceToDevice(propagatedGradient);
+    grad->setTensor_DeviceToDeviceAsync(propagatedGradient);
 
     storedGradients.gradientTensors.push_back(grad);
     storedGradients.nodeAddres.push_back(children[0]);
