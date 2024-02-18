@@ -43,6 +43,7 @@ public:
     TensorType getType();
     void buildDescriptors(shapeInfo* newShapeInfo);
     static void streamSync();
+    bool isNan();
     ~Tensor();
 
     // Tensor ops

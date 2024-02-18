@@ -207,6 +207,20 @@ void Tensor::streamSync()
     logErrorAndExit(err != cudaSuccess, "cuda stream sync failed \n");
 }
 
+bool Tensor::isNan()
+{
+    float* data = (float*) getTensorValues();
+    if(rank == 0)
+    {
+        return *data != *data;
+    }
+    for(int i= 0; i < getNumberOfElements(); i++)
+    {
+         if( data[i] != data[i]) return true;
+    }
+    return false;
+}
+
 Tensor::~Tensor()
 {
     cudaFree(tensorDeviceMemory);

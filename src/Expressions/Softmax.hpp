@@ -3,6 +3,8 @@
 #ifndef SOFTMAX
 #define SOFTMAX
 //currently softmax is supported only along channel axis
+//current implementation is very susceptible to extreme values,
+//which may cause NANs 
 class Softmax : public Expression
 {
 public:
