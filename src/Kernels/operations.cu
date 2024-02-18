@@ -112,33 +112,39 @@ __global__ void _kernelAxisAlignedAccumulation(float* dest, float* src, TensorDe
 // dim_dest == dim_operand
 __global__ void _kernelScaleByConstant(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
 {
+    __shared__ float number[1];
+    number[0] = *scalar;
     unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
     while (threadIndex < upper_memory_bound)
     {
-        dest[threadIndex] = (*scalar) * (operand[threadIndex]); 
+        dest[threadIndex] = number[0] * (operand[threadIndex]); 
         threadIndex = threadIndex + blockDim.x * gridDim.x;
     }
 }
 
 __global__ void _kernelAddConstant(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
 {
+    __shared__ float number[1];
+    number[0] = *scalar;
     unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
     while (threadIndex < upper_memory_bound)
     {
-        dest[threadIndex] = (*scalar) + (operand[threadIndex]); 
+        dest[threadIndex] = number[0] + (operand[threadIndex]); 
         threadIndex = threadIndex + blockDim.x * gridDim.x;
     }
 }
 
 __global__ void _kernelDivideByConstant(float* dest, float* operand, float* scalar, TensorDesc* leftDesc)
 {
+    __shared__ float number[1];
+    number[0] = *scalar;
     unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int upper_memory_bound = leftDesc->dim[0] * leftDesc->dimStrides[0];
     while (threadIndex < upper_memory_bound)
     {
-        dest[threadIndex] = (operand[threadIndex]) / *scalar; 
+        dest[threadIndex] = (operand[threadIndex]) / number[0]; 
         threadIndex = threadIndex + blockDim.x * gridDim.x;
     }
 }
