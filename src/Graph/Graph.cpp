@@ -197,12 +197,12 @@ void Graph::backwardPass()
 void Graph::trainStep(FeedData &dataIn, bool printLoss)
 {
     trainCall(dataIn);
-    if(printLoss) executionList[executionList.size()-1]->getTensor()->printTensor(stdout);
     backwardPass();
     applyGradients();
 
     //sync execution and clear all grads 
     Tensor::streamSync();
+    if(printLoss) executionList[executionList.size()-1]->getTensor()->printTensor(stdout);
     for(int i=0 ; i < gradientRouteData.gradientTensors.size(); i ++)
     {
         delete  gradientRouteData.gradientTensors[i];
