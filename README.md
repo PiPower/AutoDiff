@@ -12,4 +12,4 @@ model = new Activation(model, ActivationType::relu);
 
 Result of training resnet on mnist dataset (test/MnistModel/Resnet.cpp)
 
-<img width="300"  src="https://github.com/PiPower/AutoDiff/blob/master/resnet.png">
+<img width="300"  src="https://github.com/PiPower/AutoDiff/blob/main/resnet.png">
